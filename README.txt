@@ -1,4 +1,9 @@
-Take a look at ModelExample... but the jist is:
+This is a barely working object persistence thing for Cassandra.
+I just started so stuff's rough as hell.... but you can persist an object...
+
+Quick example:
+
+============================================================================
 
 @Model(columnFamily = "Standard1", keyspace = "Keyspace1", superColumn = "")
 public class User extends BaseModel {
@@ -57,3 +62,8 @@ u.save();
 User u2 = (User) new User().load(u.getKey());
 u2.setEmail("newemail@example.com");
 u2.save();
+
+======================================================
+That's pretty much all that works right now and even
+that's got some shitty bits to it.
+
