@@ -1,6 +1,9 @@
 package me.arin.examples;
 
+import me.arin.jacass.BaseModel;
 import me.arin.jacass.Executor;
+
+import java.util.Map;
 
 /**
  * User: Arin Sarkissian
@@ -33,5 +36,11 @@ public class ModelExample {
         System.out.println("\tkey: " + u3.getKey());
         System.out.println("\temail: " + u3.getEmail());
         System.out.println("\tusername: " + u3.getUsername());
+
+        User u4 = new User("Username 2", "email2@example.com", 666);
+        u4.save();
+
+        Map<String,BaseModel> userMap = new User().get(new String[]{u4.getKey(), u.getKey()});
+        System.out.println("hello");
     }
 }

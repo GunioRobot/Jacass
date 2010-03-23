@@ -11,10 +11,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 abstract public class BaseModel {
     protected String key;
@@ -57,6 +54,10 @@ abstract public class BaseModel {
         return Executor.get().execute(command);
     }
 
+    public Map<String, BaseModel> get(final String[] rowKeys) {
+        return get(Arrays.asList(rowKeys));
+    }
+
     public Map<String, BaseModel> get(final List<String> rowKeys) {
         getRowPath();
 
@@ -77,22 +78,20 @@ abstract public class BaseModel {
             }
         };
 
+        Map<String, BaseModel> rtn = new HashMap<String, BaseModel>();
+
         try {
             Map<String, List<Column>> stuff = execute(command);
             for (String k : stuff.keySet()) {
                 BaseModel bm = this.getClass().newInstance();
-//                bm.injectColumns(map.get(k));
-//                rtn.put(k, bm);
+                bm.injectColumns(stuff.get(k));
+                rtn.put(k, bm);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return null;
-    }
-
-    private ColumnPath getColumnPath() {
-        return getColumnPath(getRowPath());
+        return rtn;
     }
 
     protected RowPath getRowPath() {
@@ -127,10 +126,6 @@ abstract public class BaseModel {
     }
 
     public BaseModel save() {
-//        ClientManager clientManager = getCassandraClientManager();
-//        final Cassandra.Client client = (Cassandra.Client) clientManager.getClient();
-        final RowPath rp = getRowPath();
-
         Command<Void> command = new Command<Void>() {
             @Override
             public Void execute(Keyspace keyspace) throws Exception {
@@ -148,24 +143,23 @@ abstract public class BaseModel {
         return this;
     }
 
-//    public boolean remove() {
-//        ClientManager clientManager = getCassandraClientManager();
-//        final Cassandra.Client client = (Cassandra.Client) clientManager.getClient();
-//        final RowPath rp = getRowPath();
-//        final ColumnPath columnKey = getColumnPath(rp);
-//
-//        ClientOperation<Void> operation = new ClientOperation<Void>() {
-//            @Override
-//            public Void execute() throws TException, TimedOutException, NotFoundException, InvalidRequestException,
-//                    UnavailableException {
-//                client.remove(rp.getKeyspace(), getKey(), columnKey, System.currentTimeMillis(), ConsistencyLevel.ONE);
-//                return null;
-//            }
-//        };
-//
-//        clientManager.execute(operation, client);
-//        return true;
-//    }
+    public boolean remove() {
+        Command<Void> command = new Command<Void>() {
+            @Override
+            public Void execute(Keyspace keyspace) throws Exception {
+                keyspace.remove(getKey(), getColumnPath(getRowPath()));
+                return null;
+            }
+        };
+
+        try {
+            execute(command);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return true;
+    }
 
     private ColumnPath getColumnPath(RowPath rp) {
         ColumnPath columnKey = new ColumnPath(rp.getColumnFamily());
@@ -178,16 +172,16 @@ abstract public class BaseModel {
         return columnKey;
     }
 
-//    public static boolean remove(Class modelClass, String key) {
-//        try {
-//            BaseModel m = (BaseModel) modelClass.newInstance();
-//            m.setKey(key);
-//            return m.remove();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return false;
-//        }
-//    }
+    public static boolean remove(Class modelClass, String key) {
+        try {
+            BaseModel m = (BaseModel) modelClass.newInstance();
+            m.setKey(key);
+            return m.remove();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     protected Map<String, List<Column>> getCFMap() {
         getColumnInfo();
@@ -202,8 +196,7 @@ abstract public class BaseModel {
                 continue;
             }
 
-            ColumnOrSuperColumn corsc = new ColumnOrSuperColumn();
-            Object value = null;
+            Object value;
             try {
                 value = method.invoke(this);
                 byte[] bytes = Caster.toBytes(columnInfo.get(columnName), value);
