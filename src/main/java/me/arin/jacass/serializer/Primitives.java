@@ -1,22 +1,12 @@
-package me.arin.jacass;
+package me.arin.jacass.serializer;
+
+import me.arin.jacass.Serializer;
 
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
-enum SuppportedType {
-    INT,
-    BYTE,
-    SHORT,
-    LONG,
-    FLOAT,
-    DOUBLE,
-    CHAR,
-    BOOLEAN,
-    STRING
-}
-
-class Caster {
+public class Primitives implements Serializer {
     public static final Map<String, SuppportedType> typeMap = new HashMap<String, SuppportedType>();
 
     static {
@@ -35,12 +25,14 @@ class Caster {
         return typeMap.get(cls.getName());
     }
 
-    public static byte[] toBytes(Class columnType, Object value) {
+    public byte[] toBytes(Object value) {
         if (null == value) {
             return new byte[]{};
         }
 
-        if ("java.lang.String".equals(columnType.getName())) {
+        Class cls = value.getClass();
+        
+        if ("java.lang.String".equals(cls.getName())) {
             return ((String) value).getBytes();
         }
 
@@ -48,7 +40,7 @@ class Caster {
         DataOutputStream dout = new DataOutputStream(bout);
 
         try {
-            switch (Caster.getClassCode(columnType)) {
+            switch (Primitives.getClassCode(cls)) {
                 case INT:
                     dout.writeInt((Integer) value);
                     break;
@@ -82,7 +74,7 @@ class Caster {
                     break;
                 default:
                     dout.writeByte(0);
-                    return null;
+                    break;
             }
 
             dout.flush();
@@ -93,15 +85,19 @@ class Caster {
         return bout.toByteArray();
     }
 
-    public static Object fromBytes(Class columnType, byte[] bytesValue) throws IOException {
-        if ("java.lang.String".equals(columnType.getName())) {
-            return new String(bytesValue);
+    public Object fromBytes(byte[] bytes) throws IOException {
+        return fromBytes(String.class, bytes);
+    }
+
+    public Object fromBytes(Class cls, byte[] bytes) throws IOException {
+        if ("java.lang.String".equals(cls.getName())) {
+            return new String(bytes);
         }
 
         Object castValue;
-        DataInputStream dis = new DataInputStream(new ByteArrayInputStream(bytesValue));
+        DataInputStream dis = new DataInputStream(new ByteArrayInputStream(bytes));
 
-        switch (Caster.getClassCode(columnType)) {
+        switch (Primitives.getClassCode(cls)) {
             case INT:
                 castValue = dis.readInt();
                 break;

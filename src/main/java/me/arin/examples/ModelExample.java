@@ -16,14 +16,13 @@ public class ModelExample {
 
         User u = new User("Arin Sarkissian", "arin@digg.com", 31);
         u.save();
-        System.out.println("created a new user");
-        System.out.println("\tuuid key: " + u.getKey());
+        System.out.println("created a new user\n\tuuid key: " + u.getKey());
 
         System.out.println("\nloading user w/ row key: " + u.getKey());
         User u2 = (User) new User().load(u.getKey());
-        System.out.println("\tkey: " + u2.getKey());
-        System.out.println("\temail: " + u2.getEmail());
-        System.out.println("\tusername: " + u2.getUsername());
+        System.out.println("\tkey: " + u2.getKey()
+                + "\temail: " + u2.getEmail()
+                + "\tusername: " + u2.getUsername());
 
         System.out.println("changing their email");
         u2.setEmail("newemail@example.com");
@@ -43,13 +42,13 @@ public class ModelExample {
         System.out.println("\tkey: " + u4.getKey());
 
         System.out.println("\nMultiget");
-        Map<String,BaseModel> userMap = new User().get(new String[]{u4.getKey(), u.getKey()});
+        Map<String, BaseModel> userMap = new User().get(new String[]{u4.getKey(), u.getKey()});
         for (String key : userMap.keySet()) {
             User user = (User) userMap.get(key);
-            
+
             System.out.println("\tgot: " + key);
             System.out.println("\t\temail: " + user.getEmail());
-            System.out.println("\t\tusername: " + user.getUsername());            
+            System.out.println("\t\tusername: " + user.getUsername());
         }
     }
 }

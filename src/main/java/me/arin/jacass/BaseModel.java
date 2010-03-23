@@ -1,5 +1,6 @@
 package me.arin.jacass;
 
+import me.arin.jacass.serializer.Primitives;
 import me.prettyprint.cassandra.dao.Command;
 import me.prettyprint.cassandra.service.Keyspace;
 import org.apache.cassandra.thrift.*;
@@ -18,6 +19,7 @@ abstract public class BaseModel {
     protected static final int DEFAULT_MAX_COLUMNS = 100;
     protected RowPath rowPath;
     protected Map<String, Class> columnInfo;
+    protected Serializer serializer;
 
     public BaseModel() {
     }
@@ -36,6 +38,14 @@ abstract public class BaseModel {
         }
 
         return key;
+    }
+
+    public Serializer getSerializer() {
+        if (serializer == null) {
+            serializer = new Primitives();
+        }
+
+        return serializer;
     }
 
     public void setKey(String key) {
@@ -199,7 +209,7 @@ abstract public class BaseModel {
             Object value;
             try {
                 value = method.invoke(this);
-                byte[] bytes = Caster.toBytes(columnInfo.get(columnName), value);
+                byte[] bytes = getSerializer().toBytes(value);
                 Column c = new Column(columnName.getBytes(), bytes, System.currentTimeMillis());
                 columnList.add(c);
             } catch (Exception e) {
@@ -266,7 +276,7 @@ abstract public class BaseModel {
                 continue;
             }
 
-            Object castData = Caster.fromBytes(columnType, column.getValue());
+            Object castData = getSerializer().fromBytes(columnType, column.getValue());
 
             if (castData == null) {
                 continue;

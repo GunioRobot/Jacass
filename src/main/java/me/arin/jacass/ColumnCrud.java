@@ -2,8 +2,6 @@ package me.arin.jacass;
 
 import org.apache.cassandra.thrift.ColumnPath;
 
-import java.io.IOException;
-
 /**
  * User: Arin Sarkissian
  * Date: Mar 10, 2010
@@ -43,11 +41,7 @@ public class ColumnCrud {
     }
 
     protected static Object getColumnValue(ColumnKey key, Class cls) {
-        try {
-            return Caster.fromBytes(cls, getRawBytes(key));
-        } catch (IOException e) {
-            return null;
-        }
+        return null;//Primitives.fromBytes(cls, getRawBytes(key));
     }
 
 //    protected static ClientManager getCassandraClientManager() {
