@@ -66,10 +66,10 @@ I just started so stuff's rough as hell.... but you can persist an object...
     u2.save();
 
 
-# Borken:
+# Broken:
 
-* a bunch of stuff
 * currently hardcoded to use localhost:9160 to connect to cassandra
+* a bunch of other stuff im sure
 
 # TODO:
 
@@ -79,4 +79,5 @@ I just started so stuff's rough as hell.... but you can persist an object...
 * secondary index clice -> object mappings (views)
 * load() via secondary index
 * automatically create secondardy indexes
+* write some tests
 
