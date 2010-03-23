@@ -22,7 +22,7 @@ abstract public class BaseModel {
     protected Serializer serializer;
 
     public BaseModel() {
-        
+
     }
 
     protected int getMaxNumColumns() {
@@ -167,7 +167,7 @@ abstract public class BaseModel {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
         return true;
     }
 
@@ -193,7 +193,7 @@ abstract public class BaseModel {
         }
     }
 
-    protected Map<String, List<Column>> getCFMap() {
+    protected Map<String, List<Column>> getCFMap() throws JacassException {
         getColumnInfo();
         List<Column> columnList = new ArrayList<Column>();
 
@@ -201,17 +201,14 @@ abstract public class BaseModel {
             String getterName = (new StringBuilder("get").append(StringUtils.capitalize(columnName))).toString();
             Method method = MethodUtils.getAccessibleMethod(this.getClass(), getterName, new Class[]{});
 
-            // TODO: bitch about lack of getter
             if (method == null) {
-                continue;
+                throw new JacassException("No getter for " + columnName);
             }
 
-            Object value;
             try {
-                value = method.invoke(this);
-                byte[] bytes = getSerializer().toBytes(columnInfo.get(columnName), value);
-                Column c = new Column(columnName.getBytes(), bytes, System.currentTimeMillis());
-                columnList.add(c);
+                columnList.add(new Column(columnName.getBytes(),
+                                          getSerializer().toBytes(columnInfo.get(columnName), method.invoke(this)),
+                                          System.currentTimeMillis()));
             } catch (Exception e) {
                 e.printStackTrace();
             }

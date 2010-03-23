@@ -14,5 +14,5 @@ enum SuppportedType {
     DOUBLE,
     CHAR,
     BOOLEAN,
-    STRING;
+    STRING
 }
