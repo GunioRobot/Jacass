@@ -1,7 +1,5 @@
 package me.arin.jacass;
 
-import com.digg.client.ClientManager;
-import com.digg.client.ClientOperation;
 import org.apache.cassandra.thrift.*;
 import org.apache.thrift.TException;
 
@@ -41,62 +39,61 @@ abstract public class BaseView {
         return columnKey;
     }
 
-    public ClientManager getCassandraClientManager() {
-        return ClientManager.factory(Cassandra.Client.class);
-    }
-
     protected List<ColumnOrSuperColumn> getIndexColumns() {
-        final ClientManager clientManager = getCassandraClientManager();
-        final Cassandra.Client client = (Cassandra.Client) clientManager.getClient();
-        final ColumnKey rk = getColumnKey();
-        final ColumnParent columnParent = new ColumnParent(rk.getColumnFamily());
+//        final ClientManager clientManager = getCassandraClientManager();
+//        final Cassandra.Client client = (Cassandra.Client) clientManager.getClient();
+//        final ColumnKey rk = getColumnKey();
+//        final ColumnParent columnParent = new ColumnParent(rk.getColumnFamily());
+//
+//        String superColumn = rk.getSuperColumn();
+//        if (!"".equals(superColumn)) {
+//            columnParent.setSuper_column(superColumn.getBytes());
+//        }
+//
+//        int limit = getLimit();
+//        if (sliceMode == SliceMode.EXCLUSIVE) {
+//            limit++;
+//        }
+//
+//        final SlicePredicate sp = new SlicePredicate();
+//        sp.setSlice_range(new SliceRange(statColumn.getBytes(), endColumn.getBytes(), reversed, limit));
+//
+//        try {
+//            ClientOperation<List<ColumnOrSuperColumn>> operation = new ClientOperation<List<ColumnOrSuperColumn>>() {
+//                @Override
+//                public List<ColumnOrSuperColumn> execute() {
+//                    try {
+//                        try {
+//                            return client
+//                                    .get_slice(rk.getKeyspace(), rk.getKey(), columnParent, sp, ConsistencyLevel.ONE);
+//                        } catch (InvalidRequestException e) {
+//                            e.printStackTrace();
+//                        } catch (UnavailableException e) {
+//                            e.printStackTrace();
+//                        } catch (TException e) {
+//                            e.printStackTrace();
+//                        }
+//                    } catch (TimedOutException e) {
+//                        e.printStackTrace();
+//                    }
+//
+//                    return null;
+//                }
+//            };
+//
+//            List<ColumnOrSuperColumn> columns = (List<ColumnOrSuperColumn>) clientManager.getResult(operation, client);
+//
+//            if (sliceMode == SliceMode.EXCLUSIVE && !columns.isEmpty()) {
+//                columns.remove(0);
+//            }
+//
+//            return columns;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return null;
+//        }
 
-        String superColumn = rk.getSuperColumn();
-        if (!"".equals(superColumn)) {
-            columnParent.setSuper_column(superColumn.getBytes());
-        }
-
-        int limit = getLimit();
-        if (sliceMode == SliceMode.EXCLUSIVE) {
-            limit++;
-        }
-
-        final SlicePredicate sp = new SlicePredicate();
-        sp.setSlice_range(new SliceRange(statColumn.getBytes(), endColumn.getBytes(), reversed, limit));
-
-        try {
-            ClientOperation<List<ColumnOrSuperColumn>> operation = new ClientOperation<List<ColumnOrSuperColumn>>() {
-                @Override
-                public List<ColumnOrSuperColumn> execute() {
-                    try {
-                        try {
-                            return client.get_slice(rk.getKeyspace(), rk.getKey(), columnParent, sp, ConsistencyLevel.ONE);
-                        } catch (InvalidRequestException e) {
-                            e.printStackTrace();
-                        } catch (UnavailableException e) {
-                            e.printStackTrace();
-                        } catch (TException e) {
-                            e.printStackTrace();
-                        }
-                    } catch (TimedOutException e) {
-                        e.printStackTrace();
-                    }
-
-                    return null;
-                }
-            };
-
-            List<ColumnOrSuperColumn> columns = (List<ColumnOrSuperColumn>) clientManager.getResult(operation, client);
-
-            if (sliceMode == SliceMode.EXCLUSIVE && !columns.isEmpty()) {
-                columns.remove(0);
-            }
-
-            return columns;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+        return null;
     }
 
     public List<?> get() {

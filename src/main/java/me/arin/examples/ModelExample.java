@@ -1,5 +1,7 @@
 package me.arin.examples;
 
+import me.arin.jacass.Executor;
+
 /**
  * User: Arin Sarkissian
  * Date: Mar 22, 2010
@@ -7,6 +9,8 @@ package me.arin.examples;
  */
 public class ModelExample {
     public static void main(String[] args) {
+        Executor.add("Keyspace1", "localhost", 9160);
+
         User u = new User("Arin Sarkissian", "arin@digg.com", 31);
         u.save();
         System.out.println("created a new user");

@@ -1,13 +1,10 @@
 package me.arin.jacass;
 
-import com.digg.client.ClientManager;
-import com.digg.client.ClientOperation;
 import me.prettyprint.cassandra.dao.Command;
 import me.prettyprint.cassandra.service.Keyspace;
 import org.apache.cassandra.thrift.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.reflect.MethodUtils;
-import org.apache.thrift.TException;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -57,7 +54,7 @@ abstract public class BaseModel {
     public abstract String generateKey();
 
     protected <T> T execute(Command<T> command) throws Exception {
-        return command.execute("localhost", 9160, getRowPath().getKeyspace());
+        return Executor.get().execute(command);
     }
 
     public Map<String, BaseModel> get(final List<String> rowKeys) {
@@ -96,10 +93,6 @@ abstract public class BaseModel {
 
     private ColumnPath getColumnPath() {
         return getColumnPath(getRowPath());
-    }
-
-    public ClientManager getCassandraClientManager() {
-        return ClientManager.factory(Cassandra.Client.class);
     }
 
     protected RowPath getRowPath() {

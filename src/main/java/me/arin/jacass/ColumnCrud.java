@@ -1,9 +1,6 @@
 package me.arin.jacass;
 
-import com.digg.client.ClientManager;
-import com.digg.client.ClientOperation;
-import org.apache.cassandra.thrift.*;
-import org.apache.thrift.TException;
+import org.apache.cassandra.thrift.ColumnPath;
 
 import java.io.IOException;
 
@@ -14,21 +11,23 @@ import java.io.IOException;
  */
 public class ColumnCrud {
     protected static byte[] getRawBytes(final ColumnKey key) {
-        final ColumnPath columnKey = getColumnPath(key);
-        final ClientManager clientManager = getCassandraClientManager();
+//        final ColumnPath columnKey = getColumnPath(key);
+//        final ClientManager clientManager = getCassandraClientManager();
+//
+//        ClientOperation<byte[]> operation = new ClientOperation<byte[]>() {
+//            public byte[] execute() throws TException, TimedOutException, NotFoundException, InvalidRequestException,
+//                    UnavailableException {
+//                Cassandra.Client client = (Cassandra.Client) clientManager.getClient();
+//                ColumnOrSuperColumn column = client
+//                        .get(key.getKeyspace(), key.getKey(), columnKey, ConsistencyLevel.ONE);
+//
+//                return column.getColumn().getValue();
+//            }
+//        };
+//
+//        return (byte[]) clientManager.getResult(operation, clientManager);
 
-        ClientOperation<byte[]> operation = new ClientOperation<byte[]>() {
-            public byte[] execute() throws TException, TimedOutException, NotFoundException, InvalidRequestException,
-                    UnavailableException {
-                Cassandra.Client client = (Cassandra.Client) clientManager.getClient();
-                ColumnOrSuperColumn column = client
-                        .get(key.getKeyspace(), key.getKey(), columnKey, ConsistencyLevel.ONE);
-
-                return column.getColumn().getValue();
-            }
-        };
-
-        return (byte[]) clientManager.getResult(operation, clientManager);
+        return null;
     }
 
     protected static ColumnPath getColumnPath(ColumnKey key) {
@@ -51,9 +50,9 @@ public class ColumnCrud {
         }
     }
 
-    protected static ClientManager getCassandraClientManager() {
-        return ClientManager.factory(Cassandra.Client.class);
-    }
+//    protected static ClientManager getCassandraClientManager() {
+//        return ClientManager.factory(Cassandra.Client.class);
+//    }
 
     public static int getInt(ColumnKey key) {
         return getInt(key, 0);
@@ -141,40 +140,40 @@ public class ColumnCrud {
     }
 
     public static void set(final ColumnKey key, Object value) {
-        ClientManager clientManager = getCassandraClientManager();
-        final Cassandra.Client client = (Cassandra.Client) clientManager.getClient();
-        final ColumnPath columnKey = getColumnPath(key);
-        final byte[] bytes = Caster.toBytes(value.getClass(), value);
-
-        ClientOperation<Void> clientOperation = new ClientOperation<Void>() {
-            @Override
-            public Void execute() throws TException, TimedOutException, NotFoundException, InvalidRequestException,
-                    UnavailableException {
-                client.insert(key.getKeyspace(), key.getKey(), columnKey, bytes, System.currentTimeMillis(),
-                              ConsistencyLevel.ONE);
-                return null;
-            }
-        };
-
-        clientManager.execute(clientOperation, client);
-    }
-
-    public static void remove(final ColumnKey key) {
-        final ColumnPath cp = getColumnPath(key);
-        final ClientManager clientManager = getCassandraClientManager();
-        final Cassandra.Client client = (Cassandra.Client) clientManager.getClient();
-
-        ClientOperation<Void> operation = new ClientOperation<Void>() {
-            @Override
-            public Void execute() throws TException, TimedOutException, NotFoundException, InvalidRequestException,
-                    UnavailableException {
-
-                client.remove(key.getKeyspace(), key.getKey(), cp, System.currentTimeMillis(), ConsistencyLevel.ONE);
-                return null;
-            }
-        };
-
-        clientManager.execute(operation, client);
+//        ClientManager clientManager = getCassandraClientManager();
+//        final Cassandra.Client client = (Cassandra.Client) clientManager.getClient();
+//        final ColumnPath columnKey = getColumnPath(key);
+//        final byte[] bytes = Caster.toBytes(value.getClass(), value);
+//
+//        ClientOperation<Void> clientOperation = new ClientOperation<Void>() {
+//            @Override
+//            public Void execute() throws TException, TimedOutException, NotFoundException, InvalidRequestException,
+//                    UnavailableException {
+//                client.insert(key.getKeyspace(), key.getKey(), columnKey, bytes, System.currentTimeMillis(),
+//                              ConsistencyLevel.ONE);
+//                return null;
+//            }
+//        };
+//
+//        clientManager.execute(clientOperation, client);
+//    }
+//
+//    public static void remove(final ColumnKey key) {
+//        final ColumnPath cp = getColumnPath(key);
+//        final ClientManager clientManager = getCassandraClientManager();
+//        final Cassandra.Client client = (Cassandra.Client) clientManager.getClient();
+//
+//        ClientOperation<Void> operation = new ClientOperation<Void>() {
+//            @Override
+//            public Void execute() throws TException, TimedOutException, NotFoundException, InvalidRequestException,
+//                    UnavailableException {
+//
+//                client.remove(key.getKeyspace(), key.getKey(), cp, System.currentTimeMillis(), ConsistencyLevel.ONE);
+//                return null;
+//            }
+//        };
+//
+//        clientManager.execute(operation, client);
     }
 
     public static boolean exists(ColumnKey key) {
