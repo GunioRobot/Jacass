@@ -9,6 +9,7 @@ import java.io.IOException;
  */
 public interface Serializer {
     byte[] toBytes(Object value);
+    byte[] toBytes(Class cls, Object value);
 
     Object fromBytes(byte[] bytes) throws IOException;
 

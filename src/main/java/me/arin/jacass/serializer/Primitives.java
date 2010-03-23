@@ -25,13 +25,11 @@ public class Primitives implements Serializer {
         return typeMap.get(cls.getName());
     }
 
-    public byte[] toBytes(Object value) {
+    public byte[] toBytes(Class cls, Object value) {
         if (null == value) {
             return new byte[]{};
         }
 
-        Class cls = value.getClass();
-        
         if ("java.lang.String".equals(cls.getName())) {
             return ((String) value).getBytes();
         }
@@ -40,7 +38,11 @@ public class Primitives implements Serializer {
         DataOutputStream dout = new DataOutputStream(bout);
 
         try {
-            switch (Primitives.getClassCode(cls)) {
+            SuppportedType classCode = Primitives.getClassCode(cls);
+            if (classCode == null) {
+                System.out.println("9");
+            }
+            switch (classCode) {
                 case INT:
                     dout.writeInt((Integer) value);
                     break;
@@ -83,6 +85,10 @@ public class Primitives implements Serializer {
         }
 
         return bout.toByteArray();
+    }
+
+    public byte[] toBytes(Object value) {
+        return toBytes(value.getClass(), value);
     }
 
     public Object fromBytes(byte[] bytes) throws IOException {

@@ -22,6 +22,7 @@ abstract public class BaseModel {
     protected Serializer serializer;
 
     public BaseModel() {
+        
     }
 
     protected int getMaxNumColumns() {
@@ -106,17 +107,16 @@ abstract public class BaseModel {
 
     protected RowPath getRowPath() {
         if (rowPath == null) {
-            Annotation annotation = this.getClass().getAnnotation(Model.class);
-            Model a = (Model) annotation;
-
-            String columnFamily = a.columnFamily();
-            String superColumn = a.superColumn();
-            String keyspace = a.keyspace();
-
-            rowPath = new RowPath(keyspace, columnFamily, superColumn);
+            setupRowPath();
         }
 
         return rowPath;
+    }
+
+    private void setupRowPath() {
+        Annotation annotation = this.getClass().getAnnotation(Model.class);
+        Model a = (Model) annotation;
+        rowPath = new RowPath(a.keyspace(), a.columnFamily(), a.superColumn());
     }
 
     protected Map<String, Class> getColumnInfo() {
@@ -209,7 +209,7 @@ abstract public class BaseModel {
             Object value;
             try {
                 value = method.invoke(this);
-                byte[] bytes = getSerializer().toBytes(value);
+                byte[] bytes = getSerializer().toBytes(columnInfo.get(columnName), value);
                 Column c = new Column(columnName.getBytes(), bytes, System.currentTimeMillis());
                 columnList.add(c);
             } catch (Exception e) {
