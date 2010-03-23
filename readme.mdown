@@ -3,9 +3,12 @@ I just started so stuff's rough as hell.... but you can persist an object...
 
 # Quick example:
 
-    
+    // annotate the class
     @Model(columnFamily = "Standard1", keyspace = "Keyspace1", superColumn = "")
     public class User extends BaseModel {
+
+        // annotate each member you wanna persist
+        // and make sure it has a getter and setter
         @ModelProperty
         String username;
 
