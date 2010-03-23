@@ -37,10 +37,19 @@ public class ModelExample {
         System.out.println("\temail: " + u3.getEmail());
         System.out.println("\tusername: " + u3.getUsername());
 
+        System.out.println("\nCreating a new user again.");
         User u4 = new User("Username 2", "email2@example.com", 666);
         u4.save();
+        System.out.println("\tkey: " + u4.getKey());
 
+        System.out.println("\nMultiget");
         Map<String,BaseModel> userMap = new User().get(new String[]{u4.getKey(), u.getKey()});
-        System.out.println("hello");
+        for (String key : userMap.keySet()) {
+            User user = (User) userMap.get(key);
+            
+            System.out.println("\tgot: " + key);
+            System.out.println("\t\temail: " + user.getEmail());
+            System.out.println("\t\tusername: " + user.getUsername());            
+        }
     }
 }
