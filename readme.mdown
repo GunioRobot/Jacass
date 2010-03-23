@@ -1,9 +1,8 @@
 This is a barely working object persistence thing for Cassandra.
 I just started so stuff's rough as hell.... but you can persist an object...
 
-Quick example:
+# Quick example:
 
-==========
     
     @Model(columnFamily = "Standard1", keyspace = "Keyspace1", superColumn = "")
     public class User extends BaseModel {
