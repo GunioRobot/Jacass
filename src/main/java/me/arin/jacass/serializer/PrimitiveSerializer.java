@@ -6,7 +6,7 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Primitives implements Serializer {
+public class PrimitiveSerializer implements Serializer {
     public static final Map<String, SuppportedType> typeMap = new HashMap<String, SuppportedType>();
 
     static {
@@ -38,9 +38,9 @@ public class Primitives implements Serializer {
         DataOutputStream dout = new DataOutputStream(bout);
 
         try {
-            SuppportedType classCode = Primitives.getClassCode(cls);
+            SuppportedType classCode = PrimitiveSerializer.getClassCode(cls);
             if (classCode == null) {
-                System.out.println("9");
+                // TODO:
             }
             switch (classCode) {
                 case INT:
@@ -103,7 +103,7 @@ public class Primitives implements Serializer {
         Object castValue;
         DataInputStream dis = new DataInputStream(new ByteArrayInputStream(bytes));
 
-        switch (Primitives.getClassCode(cls)) {
+        switch (PrimitiveSerializer.getClassCode(cls)) {
             case INT:
                 castValue = dis.readInt();
                 break;

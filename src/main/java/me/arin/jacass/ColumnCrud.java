@@ -1,6 +1,12 @@
 package me.arin.jacass;
 
+import me.arin.jacass.serializer.PrimitiveSerializer;
+import me.prettyprint.cassandra.dao.Command;
+import me.prettyprint.cassandra.service.Keyspace;
+import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnPath;
+
+import java.io.IOException;
 
 /**
  * User: Arin Sarkissian
@@ -8,27 +14,37 @@ import org.apache.cassandra.thrift.ColumnPath;
  * Time: 4:56:38 PM
  */
 public class ColumnCrud {
-    protected static byte[] getRawBytes(final ColumnKey key) {
-//        final ColumnPath columnKey = getColumnPath(key);
-//        final ClientManager clientManager = getCassandraClientManager();
-//
-//        ClientOperation<byte[]> operation = new ClientOperation<byte[]>() {
-//            public byte[] execute() throws TException, TimedOutException, NotFoundException, InvalidRequestException,
-//                    UnavailableException {
-//                Cassandra.Client client = (Cassandra.Client) clientManager.getClient();
-//                ColumnOrSuperColumn column = client
-//                        .get(key.getKeyspace(), key.getKey(), columnKey, ConsistencyLevel.ONE);
-//
-//                return column.getColumn().getValue();
-//            }
-//        };
-//
-//        return (byte[]) clientManager.getResult(operation, clientManager);
+    protected PrimitiveSerializer serializer;
+    protected Executor executor;
 
-        return null;
+    public ColumnCrud(Executor executor) {
+        serializer = new PrimitiveSerializer();
+        this.executor = executor;
     }
 
-    protected static ColumnPath getColumnPath(ColumnKey key) {
+    protected byte[] getRawBytes(final ColumnKey key) {
+        Command<byte[]> command = new Command<byte[]>() {
+            @Override
+            public byte[] execute(Keyspace keyspace) throws Exception {
+                Column column = keyspace.getColumn(key.getKey(), getColumnPath(key));
+
+                if (column == null) {
+                    return null;
+                }
+
+                return column.getValue();
+            }
+        };
+
+        try {
+            return executor.execute(command);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    protected ColumnPath getColumnPath(ColumnKey key) {
         ColumnPath columnKey = new ColumnPath(key.getColumnFamily());
 
         String superColumn = key.getSuperColumn();
@@ -40,137 +56,135 @@ public class ColumnCrud {
         return columnKey;
     }
 
-    protected static Object getColumnValue(ColumnKey key, Class cls) {
-        return null;//Primitives.fromBytes(cls, getRawBytes(key));
+    protected Object getColumnValue(ColumnKey key, Class cls) {
+        try {
+            return serializer.fromBytes(cls, getRawBytes(key));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
-//    protected static ClientManager getCassandraClientManager() {
-//        return ClientManager.factory(Cassandra.Client.class);
-//    }
-
-    public static int getInt(ColumnKey key) {
+    public int getInt(ColumnKey key) {
         return getInt(key, 0);
     }
 
-    public static int getInt(ColumnKey key, int defaultValue) {
+    public int getInt(ColumnKey key, int defaultValue) {
         Object value = getColumnValue(key, int.class);
         return (value != null) ? (Integer) value : defaultValue;
     }
 
-    public static float getFloat(ColumnKey key) {
+    public float getFloat(ColumnKey key) {
         return getFloat(key, 0);
     }
 
-    public static float getFloat(ColumnKey key, float defaultValue) {
+    public float getFloat(ColumnKey key, float defaultValue) {
         Object value = getColumnValue(key, float.class);
         return (value != null) ? (Float) value : defaultValue;
     }
 
-    public static double getDouble(ColumnKey key) {
+    public double getDouble(ColumnKey key) {
         return getDouble(key, 0);
     }
 
-    public static double getDouble(ColumnKey key, double defaultValue) {
+    public double getDouble(ColumnKey key, double defaultValue) {
         Object value = getColumnValue(key, double.class);
         return (value != null) ? (Double) value : defaultValue;
     }
 
-    public static boolean getBoolean(ColumnKey key) {
+    public boolean getBoolean(ColumnKey key) {
         return getBoolean(key, false);
     }
 
-    public static boolean getBoolean(ColumnKey key, boolean defaultValue) {
+    public boolean getBoolean(ColumnKey key, boolean defaultValue) {
         Object value = getColumnValue(key, boolean.class);
         return (value != null) ? (Boolean) value : defaultValue;
     }
 
-    public static byte getByte(ColumnKey key) {
+    public byte getByte(ColumnKey key) {
         return getByte(key, (byte) 0);
     }
 
-    public static byte getByte(ColumnKey key, byte defaultValue) {
+    public byte getByte(ColumnKey key, byte defaultValue) {
         byte[] rawBytes = getRawBytes(key);
         return (rawBytes.length == 1) ? rawBytes[0] : defaultValue;
     }
 
-    public static char getChar(ColumnKey key) {
+    public char getChar(ColumnKey key) {
         return getChar(key, '\u0000');
     }
 
-    public static char getChar(ColumnKey key, char defaultValue) {
+    public char getChar(ColumnKey key, char defaultValue) {
         Object value = getColumnValue(key, char.class);
         return (value != null) ? (Character) value : defaultValue;
     }
 
-    public static long getLong(ColumnKey key) {
+    public long getLong(ColumnKey key) {
         return getLong(key, 0);
     }
 
-    public static long getLong(ColumnKey key, long defaultValue) {
+    public long getLong(ColumnKey key, long defaultValue) {
         Object value = getColumnValue(key, long.class);
         return (value != null) ? (Long) value : defaultValue;
     }
 
-    public static short getShort(ColumnKey key) {
+    public short getShort(ColumnKey key) {
         return getShort(key, (short) 0);
     }
 
-    public static short getShort(ColumnKey key, short defaultValue) {
+    public short getShort(ColumnKey key, short defaultValue) {
         Object value = getColumnValue(key, short.class);
         return (value != null) ? (Short) value : defaultValue;
     }
 
-    public static String getString(ColumnKey key) {
+    public String getString(ColumnKey key) {
         return getString(key, null);
     }
 
-    public static String getString(ColumnKey key, String defaultValue) {
+    public String getString(ColumnKey key, String defaultValue) {
         byte[] rawBytes = getRawBytes(key);
         return (rawBytes.length != 0) ? new String(rawBytes) : defaultValue;
     }
 
-    public static byte[] getRaw(ColumnKey key) {
+    public byte[] getRaw(ColumnKey key) {
         return getRawBytes(key);
     }
 
-    public static void set(final ColumnKey key, Object value) {
-//        ClientManager clientManager = getCassandraClientManager();
-//        final Cassandra.Client client = (Cassandra.Client) clientManager.getClient();
-//        final ColumnPath columnKey = getColumnPath(key);
-//        final byte[] bytes = Caster.toBytes(value.getClass(), value);
-//
-//        ClientOperation<Void> clientOperation = new ClientOperation<Void>() {
-//            @Override
-//            public Void execute() throws TException, TimedOutException, NotFoundException, InvalidRequestException,
-//                    UnavailableException {
-//                client.insert(key.getKeyspace(), key.getKey(), columnKey, bytes, System.currentTimeMillis(),
-//                              ConsistencyLevel.ONE);
-//                return null;
-//            }
-//        };
-//
-//        clientManager.execute(clientOperation, client);
-//    }
-//
-//    public static void remove(final ColumnKey key) {
-//        final ColumnPath cp = getColumnPath(key);
-//        final ClientManager clientManager = getCassandraClientManager();
-//        final Cassandra.Client client = (Cassandra.Client) clientManager.getClient();
-//
-//        ClientOperation<Void> operation = new ClientOperation<Void>() {
-//            @Override
-//            public Void execute() throws TException, TimedOutException, NotFoundException, InvalidRequestException,
-//                    UnavailableException {
-//
-//                client.remove(key.getKeyspace(), key.getKey(), cp, System.currentTimeMillis(), ConsistencyLevel.ONE);
-//                return null;
-//            }
-//        };
-//
-//        clientManager.execute(operation, client);
+    public void set(final ColumnKey key, final Object value) {
+        final ColumnPath columnPath = getColumnPath(key);
+
+        Command<Void> command = new Command<Void>() {
+            @Override
+            public Void execute(Keyspace keyspace) throws Exception {
+                keyspace.insert(key.getKey(), columnPath, serializer.toBytes(value.getClass(), value));
+                return null;
+            }
+        };
+
+        try {
+            executor.execute(command);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public static boolean exists(ColumnKey key) {
+    public void remove(final ColumnKey key) {
+        Command<Void> command = new Command<Void>() {
+            @Override
+            public Void execute(Keyspace keyspace) throws Exception {
+                keyspace.remove(key.getKey(), getColumnPath(key));
+                return null;
+            }
+        };
+
+        try {
+            executor.execute(command);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean exists(ColumnKey key) {
         return getRawBytes(key).length > 1;
     }
 }

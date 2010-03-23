@@ -15,6 +15,7 @@ public class Executor {
     protected String host;
     protected int port;
     protected static ConcurrentHashMap<String, Executor> exectors = new ConcurrentHashMap<String, Executor>();
+    protected ColumnCrud columnCrud;
 
     public static final String DEFAULT_EXECUTOR_NAME = "__default__";
 
@@ -23,6 +24,14 @@ public class Executor {
         this.keyspace = keyspace;
         this.host = host;
         this.port = port;
+    }
+
+    public ColumnCrud getColumnCrud() {
+        if (columnCrud == null) {
+            columnCrud = new ColumnCrud(this);
+        }
+
+        return columnCrud;
     }
 
     public static Executor get(String name) {

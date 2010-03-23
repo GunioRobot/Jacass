@@ -1,6 +1,6 @@
 package me.arin.jacass;
 
-import me.arin.jacass.serializer.Primitives;
+import me.arin.jacass.serializer.PrimitiveSerializer;
 import me.prettyprint.cassandra.dao.Command;
 import me.prettyprint.cassandra.service.Keyspace;
 import org.apache.cassandra.thrift.*;
@@ -43,7 +43,7 @@ abstract public class BaseModel {
 
     public Serializer getSerializer() {
         if (serializer == null) {
-            serializer = new Primitives();
+            serializer = new PrimitiveSerializer();
         }
 
         return serializer;
