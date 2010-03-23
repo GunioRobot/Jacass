@@ -6,7 +6,20 @@
     <packaging>jar</packaging>
     <version>0.0.1</version>
     <name>jacass</name>
+
     <url>http://github.com/phatduckk/jacass</url>
+    <issueManagement>
+        <system>github</system>
+        <url>http://github.com/phatduckk/jacass/issues</url>
+    </issueManagement>
+    <developers>
+        <developer>
+            <name>Arin Sarkissian</name>
+            <id>phatduckk</id>
+            <email>arin@rspot.net</email>
+        </developer>
+    </developers>
+
     <dependencies>
         <dependency>
             <groupId>me.prettyprint</groupId>
@@ -35,7 +48,7 @@
             <version>2.0.0</version>
             <scope>system</scope>
             <systemPath>/Volumes/Digg/jacass/lib/jug-asl-2.0.0.jar</systemPath>
-        </dependency>        
+        </dependency>
 
         <dependency>
             <groupId>commons-lang</groupId>
