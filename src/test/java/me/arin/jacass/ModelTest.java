@@ -2,7 +2,6 @@ package me.arin.jacass;
 
 import me.arin.jacass.serializer.testutil.EmbeddedServerHelper;
 import me.arin.jacass.testModels.User;
-import me.prettyprint.cassandra.dao.ExampleDao;
 import org.apache.thrift.transport.TTransportException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
