@@ -1,5 +1,6 @@
 package me.arin.jacass;
 
+import me.arin.jacass.annotations.Slice;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 

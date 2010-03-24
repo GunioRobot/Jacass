@@ -1,4 +1,4 @@
-package me.arin.jacass;
+package me.arin.jacass.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -8,9 +8,14 @@ import java.lang.annotation.Target;
 /**
  * User: Arin Sarkissian
  * Date: Mar 10, 2010
- * Time: 10:37:56 AM
+ * Time: 10:35:44 AM
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface ModelProperty {
+@Target(ElementType.TYPE)
+public @interface Model {
+    public String keyspace();
+
+    public String columnFamily();
+
+    public String superColumn();
 }

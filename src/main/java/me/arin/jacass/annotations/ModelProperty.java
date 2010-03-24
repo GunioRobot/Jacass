@@ -1,4 +1,4 @@
-package me.arin.jacass;
+package me.arin.jacass.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,12 +7,10 @@ import java.lang.annotation.Target;
 
 /**
  * User: Arin Sarkissian
- * Date: Mar 23, 2010
- * Time: 4:58:36 PM
+ * Date: Mar 10, 2010
+ * Time: 10:37:56 AM
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface IndexedProperty {
-    public boolean unique();
-    public boolean required();
+@Target(ElementType.FIELD)
+public @interface ModelProperty {
 }

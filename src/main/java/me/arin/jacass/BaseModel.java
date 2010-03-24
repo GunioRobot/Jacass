@@ -1,5 +1,9 @@
 package me.arin.jacass;
 
+import me.arin.jacass.annotations.Indexable;
+import me.arin.jacass.annotations.IndexedProperty;
+import me.arin.jacass.annotations.Model;
+import me.arin.jacass.annotations.ModelProperty;
 import me.arin.jacass.serializer.PrimitiveSerializer;
 import me.prettyprint.cassandra.dao.Command;
 import me.prettyprint.cassandra.service.Keyspace;

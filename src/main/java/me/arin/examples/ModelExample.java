@@ -12,6 +12,7 @@ import java.util.Map;
  */
 public class ModelExample {
     public static void main(String[] args) {
+        // initialze the cassandra connection info
         Executor.add("Keyspace1", "localhost", 9160);
 
         // create and save a new user
@@ -32,9 +33,9 @@ public class ModelExample {
         for (String key : userMap.keySet()) {
             User user = (User) userMap.get(key);
 
-            System.out.println("\tgot: " + key);
-            System.out.println("\t\temail: " + user.getEmail());
-            System.out.println("\t\tusername: " + user.getUsername());
+            System.out.println("got: " + key);
+            System.out.println("\temail: " + user.getEmail());
+            System.out.println("\tusername: " + user.getUsername());
         }
     }
 }

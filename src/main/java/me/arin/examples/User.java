@@ -1,8 +1,8 @@
 package me.arin.examples;
 
 import me.arin.jacass.BaseModel;
-import me.arin.jacass.Model;
-import me.arin.jacass.ModelProperty;
+import me.arin.jacass.annotations.Model;
+import me.arin.jacass.annotations.ModelProperty;
 import org.safehaus.uuid.UUIDGenerator;
 
 /**
