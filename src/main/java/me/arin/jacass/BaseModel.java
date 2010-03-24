@@ -27,6 +27,7 @@ abstract public class BaseModel {
     protected RowPath rowPath;
     protected Map<String, ColumnInfo> columnInfo;
     protected Serializer serializer;
+    protected HashMap<String, byte[]> originalIndexValues = new HashMap<String, byte[]>();
 
     public BaseModel() {
 
@@ -278,6 +279,18 @@ abstract public class BaseModel {
             }
         };
 
+        List<Column> columns = cfMap.get(getRowPath().getColumnFamily());
+        for (Column column : columns) {
+            byte[] ogValue = originalIndexValues.get(new String(column.getName()));
+            if (ogValue != null) {
+                byte[] newValue = column.getValue();
+                if (!Arrays.equals(ogValue, newValue)) {
+                    // TODO: delete old index
+                    // TODO: create new index
+                }
+            }
+        }
+
         execute(command);
         return this;
     }
@@ -429,6 +442,9 @@ abstract public class BaseModel {
             Object castData = null;
             try {
                 castData = getSerializer().fromBytes(columnType, column.getValue());
+                if (ci.isIndexed()) {
+                    originalIndexValues.put(columnName, column.getValue());
+                }
             } catch (IOException e) {
                 throw new JacassException("Could not get value for " + columnName, e);
             }
