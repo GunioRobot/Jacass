@@ -2,6 +2,7 @@ package me.arin.examples;
 
 import me.arin.jacass.BaseModel;
 import me.arin.jacass.Executor;
+import me.arin.jacass.JacassException;
 
 import java.util.Map;
 
@@ -12,7 +13,7 @@ import java.util.Map;
  */
 
 public class BasicExample {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws JacassException {
         // initialze the cassandra connection info
         Executor.add("Keyspace1", "localhost", 9160);
 

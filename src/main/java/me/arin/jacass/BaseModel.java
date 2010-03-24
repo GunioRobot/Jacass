@@ -129,8 +129,12 @@ abstract public class BaseModel {
      * @return The result of executing the Command aka: result of the Cassandra thrift call
      * @throws Exception
      */
-    protected <T> T execute(Command<T> command) throws Exception {
-        return Executor.get().execute(command);
+    protected <T> T execute(Command<T> command) throws JacassException {
+        try {
+            return Executor.get().execute(command);
+        } catch (Exception e) {
+            throw new JacassException(e);
+        }
     }
 
     /**
@@ -263,21 +267,18 @@ abstract public class BaseModel {
      *
      * @return this
      */
-    public BaseModel save() {
+    public BaseModel save() throws JacassException {
+        final Map<String, List<Column>> cfMap = getCFMap();
+
         Command<Void> command = new Command<Void>() {
             @Override
             public Void execute(Keyspace keyspace) throws Exception {
-                keyspace.batchInsert(getKey(true), getCFMap(), null);
+                keyspace.batchInsert(getKey(true), cfMap, null);
                 return null;
             }
         };
 
-        try {
-            execute(command);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        execute(command);
         return this;
     }
 
@@ -286,7 +287,7 @@ abstract public class BaseModel {
      *
      * @return true
      */
-    public boolean remove() {
+    public boolean remove() throws JacassException {
         Command<Void> command = new Command<Void>() {
             @Override
             public Void execute(Keyspace keyspace) throws Exception {
@@ -295,12 +296,7 @@ abstract public class BaseModel {
             }
         };
 
-        try {
-            execute(command);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        execute(command);
         return true;
     }
 
@@ -328,15 +324,16 @@ abstract public class BaseModel {
      * @param key        row key
      * @return The success of this operation true|false
      */
-    public static boolean remove(Class modelClass, String key) {
+    public static boolean remove(Class modelClass, String key) throws JacassException {
+        BaseModel m = null;
         try {
-            BaseModel m = (BaseModel) modelClass.newInstance();
-            m.setKey(key);
-            return m.remove();
+            m = (BaseModel) modelClass.newInstance();
         } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+            throw new JacassException("Could not instanciate new " + modelClass.getSimpleName(), e);
         }
+
+        m.setKey(key);
+        return m.remove();
     }
 
     /**
@@ -363,7 +360,7 @@ abstract public class BaseModel {
                                 method.invoke(this)),
                         System.currentTimeMillis()));
             } catch (Exception e) {
-                e.printStackTrace();
+                throw new JacassException("Could not serialize columns", e);
             }
         }
 
