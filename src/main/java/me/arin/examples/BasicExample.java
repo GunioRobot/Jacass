@@ -10,6 +10,7 @@ import java.util.Map;
  * Date: Mar 22, 2010
  * Time: 4:44:38 PM
  */
+
 public class BasicExample {
     public static void main(String[] args) {
         // initialze the cassandra connection info

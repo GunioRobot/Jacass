@@ -7,11 +7,10 @@ import java.lang.annotation.Target;
 
 /**
  * User: Arin Sarkissian
- * Date: Mar 23, 2010
- * Time: 4:13:24 PM
+ * Date: Mar 10, 2010
+ * Time: 10:37:56 AM
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface Indexable {
-    public String columnFamily();
+@Target(ElementType.FIELD)
+public @interface SimpleProperty {
 }

@@ -10,6 +10,11 @@ import java.lang.annotation.Target;
  * Date: Mar 10, 2010
  * Time: 10:35:44 AM
  */
+
+/**
+ * Annotation denoting that a class should be persisted into Cassandra.
+ * Also provides info as to where (Keyspace, CF, SC) to persist the Object 
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface Model {

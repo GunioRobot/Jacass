@@ -10,11 +10,15 @@ import java.lang.annotation.Target;
  * Date: Mar 11, 2010
  * Time: 5:21:09 PM
  */
+
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface Slice {
     public String keyspace();
+
     public String columnFamily();
+
     public String superColumn();
+
     public String key();
 }

@@ -7,6 +7,10 @@ import java.io.IOException;
  * Date: Mar 23, 2010
  * Time: 11:44:58 AM
  */
+
+/**
+ * Interface for (de)serializing Column values to/from Cassandra
+ */
 public interface Serializer {
     byte[] toBytes(Object value);
 

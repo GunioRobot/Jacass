@@ -2,23 +2,23 @@ package me.arin.examples;
 
 import me.arin.jacass.BaseModel;
 import me.arin.jacass.annotations.Model;
-import me.arin.jacass.annotations.ModelProperty;
-import org.safehaus.uuid.UUIDGenerator;
+import me.arin.jacass.annotations.SimpleProperty;
 
 /**
  * User: Arin Sarkissian
  * Date: Mar 22, 2010
  * Time: 4:45:07 PM
  */
+
 @Model(columnFamily = "Standard1", keyspace = "Keyspace1", superColumn = "")
 public class User extends BaseModel {
-    @ModelProperty
+    @SimpleProperty
     String username;
 
-    @ModelProperty
+    @SimpleProperty
     String email;
 
-    @ModelProperty
+    @SimpleProperty
     int age;
 
     public User() {

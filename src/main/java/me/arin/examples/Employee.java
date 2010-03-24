@@ -3,8 +3,7 @@ package me.arin.examples;
 import me.arin.jacass.BaseModel;
 import me.arin.jacass.annotations.IndexedProperty;
 import me.arin.jacass.annotations.Model;
-import me.arin.jacass.annotations.ModelProperty;
-import org.safehaus.uuid.UUIDGenerator;
+import me.arin.jacass.annotations.SimpleProperty;
 
 /**
  * User: Arin Sarkissian
@@ -14,7 +13,7 @@ import org.safehaus.uuid.UUIDGenerator;
 
 @Model(keyspace = "Keyspace1", columnFamily = "Standard1", superColumn = "")
 public class Employee extends BaseModel {
-    @ModelProperty
+    @SimpleProperty
     String name;
 
     @IndexedProperty(unique = false, required = false)

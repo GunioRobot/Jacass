@@ -7,10 +7,16 @@ import java.lang.annotation.Target;
 
 /**
  * User: Arin Sarkissian
- * Date: Mar 10, 2010
- * Time: 10:37:56 AM
+ * Date: Mar 23, 2010
+ * Time: 4:13:24 PM
+ */
+
+/**
+ * Annotation for denoting that a secondary index must be maintained for
+ * the given member variable
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface ModelProperty {
+@Target(ElementType.TYPE)
+public @interface Indexed {
+    public String columnFamily();
 }

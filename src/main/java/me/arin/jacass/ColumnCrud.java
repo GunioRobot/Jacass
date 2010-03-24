@@ -13,6 +13,10 @@ import java.io.IOException;
  * Date: Mar 10, 2010
  * Time: 4:56:38 PM
  */
+
+/**
+ * Column level mutation. Create, read, update & delete 
+ */
 public class ColumnCrud {
     protected PrimitiveSerializer serializer;
     protected Executor executor;

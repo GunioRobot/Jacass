@@ -5,6 +5,10 @@ package me.arin.jacass;
  * Date: Mar 10, 2010
  * Time: 2:06:10 PM
  */
+
+/**
+ * Keyspace/ColumnFamilt and, optionally, SuperColumn that set a "path" to a row in Cassandra
+ */
 public class RowPath {
     protected String keyspace;
     protected String columnFamily;

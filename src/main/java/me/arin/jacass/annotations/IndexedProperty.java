@@ -14,5 +14,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface IndexedProperty {
     public boolean unique();
+
     public boolean required();
 }

@@ -9,6 +9,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * Date: Mar 17, 2010
  * Time: 5:33:17 PM
  */
+
+/**
+ * Help manage Cassandra connections and execute Hector methods
+ * against Cassandra
+ */
 public class Executor {
     protected String name;
     protected String keyspace;
