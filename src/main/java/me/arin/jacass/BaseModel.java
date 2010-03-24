@@ -245,7 +245,7 @@ abstract public class BaseModel {
                 IndexedProperty idx = field.getAnnotation(IndexedProperty.class);
 
                 if (mp != null || idx != null) {
-                    ColumnInfo ci = new ColumnInfo(field.getName(), field.getType());
+                    ColumnInfo ci = new ColumnInfo(field.getName(), field.getType(), (mp != null));
                     if (idx != null) {
                         ci.setIndexData(new IndexInfo(idx.required(), idx.required()));
                     }
@@ -350,6 +350,11 @@ abstract public class BaseModel {
         List<Column> columnList = new ArrayList<Column>();
 
         for (String columnName : columnInfo.keySet()) {
+            ColumnInfo ci = columnInfo.get(columnName);
+            if (! ci.isPersistant()) {
+                continue;
+            }
+            
             String getterName = (new StringBuilder("get").append(StringUtils.capitalize(columnName))).toString();
             Method method = MethodUtils.getAccessibleMethod(this.getClass(), getterName, new Class[]{});
 
@@ -461,10 +466,16 @@ class ColumnInfo {
     private String name;
     private Class cls;
     private IndexInfo indexData;
+    private boolean isPersistant;
 
-    ColumnInfo(String name, Class cls) {
+    ColumnInfo(String name, Class cls, boolean isPersistant) {
         this.name = name;
         this.cls = cls;
+        this.isPersistant = isPersistant;
+    }
+
+    public boolean isPersistant() {
+        return isPersistant;
     }
 
     public void setIndexData(IndexInfo indexData) {
