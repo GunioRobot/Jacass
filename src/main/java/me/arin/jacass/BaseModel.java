@@ -10,7 +10,6 @@ import org.apache.commons.lang.reflect.MethodUtils;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -18,7 +17,7 @@ abstract public class BaseModel {
     protected String key;
     protected static final int DEFAULT_MAX_COLUMNS = 100;
     protected RowPath rowPath;
-    protected Map<String, Class> columnInfo;
+    protected Map<String, ColumnInfo> columnInfo;
     protected Serializer serializer;
 
     public BaseModel() {
@@ -53,7 +52,15 @@ abstract public class BaseModel {
         this.key = key;
     }
 
-    public BaseModel load(String key) {
+    public BaseModel load(String key, boolean swallowException) {
+        try {
+            return load(key);
+        } catch (JacassException e) {
+            return null;
+        }
+    }
+
+    public BaseModel load(String key) throws JacassException {
         setKey(key);
         objectSlice();
         return this;
@@ -113,21 +120,38 @@ abstract public class BaseModel {
         return rowPath;
     }
 
-    private void setupRowPath() {
+    protected void setupRowPath() {
         Annotation annotation = this.getClass().getAnnotation(Model.class);
         Model a = (Model) annotation;
         rowPath = new RowPath(a.keyspace(), a.columnFamily(), a.superColumn());
     }
 
-    protected Map<String, Class> getColumnInfo() {
+    protected String getIndexColumnFamily() {
+        Annotation annotation = this.getClass().getAnnotation(Indexable.class);
+        if (annotation == null) {
+            return null;
+        }
+
+        Indexable indexable = (Indexable) annotation;
+        return indexable.columnFamily();
+    }
+
+    protected Map<String, ColumnInfo> getColumnInfo() {
         if (columnInfo == null) {
-            columnInfo = new HashMap<String, Class>();
+            columnInfo = new HashMap<String, ColumnInfo>();
 
             Field[] declaredFields = this.getClass().getDeclaredFields();
             for (Field field : declaredFields) {
                 ModelProperty mp = field.getAnnotation(ModelProperty.class);
-                if (mp != null) {
-                    columnInfo.put(field.getName(), field.getType());
+                IndexedProperty idx = field.getAnnotation(IndexedProperty.class);
+
+                if (mp != null || idx != null) {
+                    ColumnInfo ci = new ColumnInfo(field.getName(), field.getType());
+                    if (idx != null) {
+                        ci.setIndexData(new IndexInfo(idx.required(), idx.required()));
+                    }
+
+                    columnInfo.put(field.getName(), ci);
                 }
             }
         }
@@ -207,7 +231,7 @@ abstract public class BaseModel {
 
             try {
                 columnList.add(new Column(columnName.getBytes(),
-                                          getSerializer().toBytes(columnInfo.get(columnName), method.invoke(this)),
+                                          getSerializer().toBytes(columnInfo.get(columnName).getCls(), method.invoke(this)),
                                           System.currentTimeMillis()));
             } catch (Exception e) {
                 e.printStackTrace();
@@ -219,7 +243,7 @@ abstract public class BaseModel {
         return rtn;
     }
 
-    protected boolean objectSlice() {
+    protected boolean objectSlice() throws JacassException {
         final RowPath rp = getRowPath();
         final ColumnParent columnParent = new ColumnParent(rp.getColumnFamily());
         String superColumn = rp.getSuperColumn();
@@ -247,33 +271,30 @@ abstract public class BaseModel {
 
             injectColumns(columns);
             return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new JacassException(e);
         }
-
-        return false;
     }
 
-    protected void injectColumns(List<Column> columns) throws IOException, IllegalAccessException,
-            InvocationTargetException {
+    protected void injectColumns(List<Column> columns) throws JacassException {
         getColumnInfo();
 
         for (Column column : columns) {
             String columnName = new String(column.getName());
             String setterName = (new StringBuilder("set").append(StringUtils.capitalize(columnName))).toString();
-            Class columnType = columnInfo.get(columnName);
+            ColumnInfo ci = columnInfo.get(columnName);
+            Class columnType = ci.getCls();
 
             if (null == columnType) {
                 continue;
             }
 
-            Object castData = getSerializer().fromBytes(columnType, column.getValue());
+            Object castData = null;
+            try {
+                castData = getSerializer().fromBytes(columnType, column.getValue());
+            } catch (IOException e) {
+                throw new JacassException("Could not get value for " + columnName, e);
+            }
 
             if (castData == null) {
                 continue;
@@ -281,8 +302,63 @@ abstract public class BaseModel {
 
             Method method = MethodUtils.getAccessibleMethod(this.getClass(), setterName, columnType);
             if (method != null) {
-                method.invoke(this, castData);
+                try {
+                    method.invoke(this, castData);
+                } catch (Exception e) {
+                    throw new JacassException("Could not call " + setterName, e);
+                }
+            } else {
+                throw new JacassException("No setter for " + column);
             }
         }
+    }
+}
+
+class ColumnInfo {
+    private String name;
+    private Class cls;
+    private IndexInfo indexData;
+
+    ColumnInfo(String name, Class cls) {
+        this.name = name;
+        this.cls = cls;
+    }
+
+    public void setIndexData(IndexInfo indexData) {
+        this.indexData = indexData;
+    }
+
+    public boolean isIndexed() {
+        return (indexData != null);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Class getCls() {
+        return cls;
+    }
+
+    public IndexInfo getIndexData() {
+        return indexData;
+    }
+}
+
+class IndexInfo {
+    private boolean isRequired;
+    private boolean isUnique;
+
+    IndexInfo(boolean required, boolean unique) {
+        isRequired = required;
+        isUnique = unique;
+    }
+
+    public boolean isRequired() {
+        return isRequired;
+    }
+
+    public boolean isUnique() {
+        return isUnique;
     }
 }

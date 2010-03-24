@@ -7,10 +7,17 @@ import java.lang.annotation.Target;
 
 /**
  * User: Arin Sarkissian
- * Date: Mar 10, 2010
- * Time: 10:37:56 AM
+ * Date: Mar 11, 2010
+ * Time: 5:21:09 PM
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface ModelProperty {
+@Target(ElementType.TYPE)
+public @interface Slice {
+    public String keyspace();
+
+    public String columnFamily();
+
+    public String superColumn();
+
+    public String key();
 }

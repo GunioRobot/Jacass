@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * User: arin
+ * User: Arin Sarkissian
  * Date: Mar 10, 2010
  * Time: 10:35:44 AM
  */

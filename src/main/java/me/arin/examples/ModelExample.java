@@ -19,7 +19,7 @@ public class ModelExample {
         System.out.println("created a new user\n\tuuid key: " + u.getKey());
 
         System.out.println("\nloading user w/ row key: " + u.getKey());
-        User u2 = (User) new User().load(u.getKey());
+        User u2 = (User) new User().load(u.getKey(), true);
         System.out.println("\tkey: " + u2.getKey()
                 + "\temail: " + u2.getEmail()
                 + "\tusername: " + u2.getUsername());
@@ -31,7 +31,7 @@ public class ModelExample {
 
         System.out.println("\nloading user w/ row key: " + u.getKey());
         User u3 = new User();
-        u3.load(u.getKey());
+        u3.load(u.getKey(), true);
         System.out.println("\tkey: " + u3.getKey());
         System.out.println("\temail: " + u3.getEmail());
         System.out.println("\tusername: " + u3.getUsername());

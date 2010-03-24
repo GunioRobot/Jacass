@@ -1,7 +1,7 @@
 package me.arin.jacass;
 
-import org.apache.cassandra.thrift.*;
-import org.apache.thrift.TException;
+import org.apache.cassandra.thrift.Column;
+import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -31,8 +31,8 @@ abstract public class BaseView {
 
     protected ColumnKey getColumnKey() {
         if (columnKey == null) {
-            Annotation annotation = this.getClass().getAnnotation(IndexSlice.class);
-            IndexSlice a = (IndexSlice) annotation;
+            Annotation annotation = this.getClass().getAnnotation(Slice.class);
+            Slice a = (Slice) annotation;
             columnKey = new ColumnKey(a.keyspace(), a.columnFamily(), a.key(), a.superColumn());
         }
 

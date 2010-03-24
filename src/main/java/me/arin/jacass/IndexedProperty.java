@@ -7,10 +7,12 @@ import java.lang.annotation.Target;
 
 /**
  * User: Arin Sarkissian
- * Date: Mar 10, 2010
- * Time: 10:37:56 AM
+ * Date: Mar 23, 2010
+ * Time: 4:58:36 PM
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface ModelProperty {
+@Target(ElementType.TYPE)
+public @interface IndexedProperty {
+    public boolean unique();
+    public boolean required();
 }

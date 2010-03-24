@@ -7,17 +7,11 @@ import java.lang.annotation.Target;
 
 /**
  * User: Arin Sarkissian
- * Date: Mar 11, 2010
- * Time: 5:21:09 PM
+ * Date: Mar 23, 2010
+ * Time: 4:13:24 PM
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface IndexSlice {
-    public String keyspace();
-
+public @interface Indexable {
     public String columnFamily();
-
-    public String superColumn();
-
-    public String key();
 }
