@@ -185,8 +185,13 @@ abstract public class BaseModel {
         try {
             Map<String, List<Column>> stuff = execute(command);
             for (String k : stuff.keySet()) {
+                List<Column> columns = stuff.get(k);
+                if (columns == null || columns.isEmpty()) {
+                    continue;
+                }
+
                 BaseModel bm = this.getClass().newInstance();
-                bm.injectColumns(stuff.get(k));
+                bm.injectColumns(columns);
                 rtn.put(k, bm);
             }
         } catch (Exception e) {

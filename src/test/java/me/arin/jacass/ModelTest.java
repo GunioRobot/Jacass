@@ -8,6 +8,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -67,5 +68,40 @@ public class ModelTest {
 
         User postRemove = (User) new User().load(key);
         assertNull(postRemove);
+    }
+
+    @Test
+    public void testKeyStuff() {
+        User u = new User();
+        assertNull(u.getKey());
+        assertNotNull(u.getKey(true));
+
+        String bsKey = "balls";
+        User u2 = new User();
+        
+        u2.setKey(bsKey);
+        assertEquals(bsKey, u2.getKey());
+    }
+
+    @Test
+    public void testMultiget() throws Exception {
+        User a = new User("username-a", "email-a");
+        a.setKey("a");
+        a.save();
+
+        User b = new User("username-b", "email-b");
+        b.setKey("b");
+        b.save();
+
+        Map<String,BaseModel> users = new User().get(new String[]{"a", "b", "c"});
+        assertNotNull(users.get("a"));
+        assertNotNull(users.get("b"));
+        assertNull(users.get("c"));
+
+        assertEquals("username-a", ((User)users.get("a")).getUsername());
+        assertEquals("username-b", ((User)users.get("b")).getUsername());
+
+        assertEquals("email-a", ((User)users.get("a")).getEmail());
+        assertEquals("email-b", ((User)users.get("b")).getEmail());        
     }
 }
