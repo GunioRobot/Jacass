@@ -53,9 +53,4 @@ public class User extends BaseModel {
     public void setAge(int age) {
         this.age = age;
     }
-
-    @Override
-    public String generateKey() {
-        return UUIDGenerator.getInstance().generateRandomBasedUUID().toString();
-    }
 }

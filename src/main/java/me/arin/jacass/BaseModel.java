@@ -10,6 +10,7 @@ import me.prettyprint.cassandra.service.Keyspace;
 import org.apache.cassandra.thrift.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.reflect.MethodUtils;
+import org.safehaus.uuid.UUIDGenerator;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -70,7 +71,11 @@ abstract public class BaseModel {
         return this;
     }
 
-    public abstract String generateKey();
+    public String generateKey() {
+        return this.getClass().getSimpleName().toLowerCase()
+                + "."
+                + UUIDGenerator.getInstance().generateRandomBasedUUID().toString();
+    }
 
     protected <T> T execute(Command<T> command) throws Exception {
         return Executor.get().execute(command);
@@ -235,9 +240,9 @@ abstract public class BaseModel {
 
             try {
                 columnList.add(new Column(columnName.getBytes(),
-                                          getSerializer().toBytes(columnInfo.get(columnName).getCls(),
-                                                                  method.invoke(this)),
-                                          System.currentTimeMillis()));
+                        getSerializer().toBytes(columnInfo.get(columnName).getCls(),
+                                method.invoke(this)),
+                        System.currentTimeMillis()));
             } catch (Exception e) {
                 e.printStackTrace();
             }

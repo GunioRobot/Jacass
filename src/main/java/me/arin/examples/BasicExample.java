@@ -10,7 +10,7 @@ import java.util.Map;
  * Date: Mar 22, 2010
  * Time: 4:44:38 PM
  */
-public class ModelExample {
+public class BasicExample {
     public static void main(String[] args) {
         // initialze the cassandra connection info
         Executor.add("Keyspace1", "localhost", 9160);
@@ -33,7 +33,7 @@ public class ModelExample {
         for (String key : userMap.keySet()) {
             User user = (User) userMap.get(key);
 
-            System.out.println("got: " + key);
+            System.out.println("User key: " + key);
             System.out.println("\temail: " + user.getEmail());
             System.out.println("\tusername: " + user.getUsername());
         }

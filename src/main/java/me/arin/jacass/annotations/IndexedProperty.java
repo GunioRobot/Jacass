@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * Time: 4:58:36 PM
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Target(ElementType.FIELD)
 public @interface IndexedProperty {
     public boolean unique();
     public boolean required();
