@@ -14,35 +14,21 @@ public class ModelExample {
     public static void main(String[] args) {
         Executor.add("Keyspace1", "localhost", 9160);
 
+        // create and save a new user
         User u = new User("Arin Sarkissian", "arin@digg.com", 31);
         u.save();
-        System.out.println("created a new user\n\tuuid key: " + u.getKey());
 
-        System.out.println("\nloading user w/ row key: " + u.getKey());
+        // load up the user we created into a new object, change their email and persist the change
         User u2 = (User) new User().load(u.getKey(), true);
-        System.out.println("\tkey: " + u2.getKey()
-                + "\temail: " + u2.getEmail()
-                + "\tusername: " + u2.getUsername());
-
-        System.out.println("changing their email");
         u2.setEmail("newemail@example.com");
         u2.save();
-        System.out.println("\temail: " + u2.getEmail());
 
-        System.out.println("\nloading user w/ row key: " + u.getKey());
-        User u3 = new User();
-        u3.load(u.getKey(), true);
-        System.out.println("\tkey: " + u3.getKey());
-        System.out.println("\temail: " + u3.getEmail());
-        System.out.println("\tusername: " + u3.getUsername());
+        // OK - create a new, distinct user in cassandra
+        User u3 = new User("Username 2", "email2@example.com", 666);
+        u3.save();
 
-        System.out.println("\nCreating a new user again.");
-        User u4 = new User("Username 2", "email2@example.com", 666);
-        u4.save();
-        System.out.println("\tkey: " + u4.getKey());
-
-        System.out.println("\nMultiget");
-        Map<String, BaseModel> userMap = new User().get(new String[]{u4.getKey(), u.getKey()});
+        // now do a multiget on the 2 distinct users and spit out their info        
+        Map<String, BaseModel> userMap = new User().get(new String[]{u3.getKey(), u.getKey()});
         for (String key : userMap.keySet()) {
             User user = (User) userMap.get(key);
 

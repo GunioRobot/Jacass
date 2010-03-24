@@ -231,7 +231,8 @@ abstract public class BaseModel {
 
             try {
                 columnList.add(new Column(columnName.getBytes(),
-                                          getSerializer().toBytes(columnInfo.get(columnName).getCls(), method.invoke(this)),
+                                          getSerializer().toBytes(columnInfo.get(columnName).getCls(),
+                                                                  method.invoke(this)),
                                           System.currentTimeMillis()));
             } catch (Exception e) {
                 e.printStackTrace();
@@ -264,7 +265,6 @@ abstract public class BaseModel {
 
         try {
             List<Column> columns = execute(command);
-
             if (columns == null || columns.isEmpty()) {
                 return false;
             }
