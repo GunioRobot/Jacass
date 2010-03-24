@@ -107,7 +107,13 @@ abstract public class BaseModel {
      */
     public BaseModel load(String key) throws JacassException {
         setKey(key);
-        objectSlice();
+
+        List<Column> columns = getColumns();
+        if (columns == null || columns.isEmpty()) {
+            return null;
+        }
+
+        injectColumns(columns);
         return this;
     }
 
@@ -369,9 +375,9 @@ abstract public class BaseModel {
 
             try {
                 columnList.add(new Column(columnName.getBytes(),
-                        getSerializer().toBytes(columnInfo.get(columnName).getCls(),
-                                method.invoke(this)),
-                        System.currentTimeMillis()));
+                                          getSerializer().toBytes(columnInfo.get(columnName).getCls(),
+                                                                  method.invoke(this)),
+                                          System.currentTimeMillis()));
             } catch (Exception e) {
                 throw new JacassException("Could not serialize columns", e);
             }
@@ -388,7 +394,7 @@ abstract public class BaseModel {
      * @return Slice of Column objects from Cassandra
      * @throws JacassException
      */
-    protected boolean objectSlice() throws JacassException {
+    protected List<Column> getColumns() throws JacassException {
         final RowPath rp = getRowPath();
         final ColumnParent columnParent = new ColumnParent(rp.getColumnFamily());
         String superColumn = rp.getSuperColumn();
@@ -408,13 +414,7 @@ abstract public class BaseModel {
         };
 
         try {
-            List<Column> columns = execute(command);
-            if (columns == null || columns.isEmpty()) {
-                return false;
-            }
-
-            injectColumns(columns);
-            return true;
+            return execute(command);
         } catch (Exception e) {
             throw new JacassException(e);
         }
