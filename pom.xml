@@ -166,7 +166,7 @@
             <artifactId>clhm-production</artifactId>
             <version>1.0.0</version>
             <scope>system</scope>
-            <systemPath>/Volumes/Digg/jacass/testlib/clhm-production-1.0.jar</systemPath>
+            <systemPath>${basedir}/testlib/clhm-production-1.0.jar</systemPath>
         </dependency>
     </dependencies>
 </project>
