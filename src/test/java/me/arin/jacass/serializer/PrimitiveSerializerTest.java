@@ -33,10 +33,6 @@ public class PrimitiveSerializerTest extends TestCase {
         assertTrue(Arrays.equals(bout.toByteArray(), p.toBytes(int.class, theInt)));
         bout.reset();
 
-        dout.writeInt(theInt);
-        assertTrue(Arrays.equals(bout.toByteArray(), p.toBytes(int.class, theInt)));
-        bout.reset();
-
         dout.writeByte(theByte);
         assertTrue(Arrays.equals(bout.toByteArray(), p.toBytes(byte.class, theByte)));
         bout.reset();
@@ -87,10 +83,6 @@ public class PrimitiveSerializerTest extends TestCase {
         assertTrue(Arrays.equals(bout.toByteArray(), p.toBytes(theInt)));
         bout.reset();
 
-        dout.writeInt(theInt);
-        assertTrue(Arrays.equals(bout.toByteArray(), p.toBytes(theInt)));
-        bout.reset();
-
         dout.writeByte(theByte);
         assertTrue(Arrays.equals(bout.toByteArray(), p.toBytes(theByte)));
         bout.reset();
@@ -117,6 +109,65 @@ public class PrimitiveSerializerTest extends TestCase {
 
         dout.writeBoolean(theBoolean);
         assertTrue(Arrays.equals(bout.toByteArray(), p.toBytes(theBoolean)));
+        bout.reset();
+    }
+
+    public void testFromBytes() throws Exception {
+        String theString = "theString";
+        int theInt = Integer.MAX_VALUE;
+        byte theByte = Byte.MAX_VALUE;
+        short theShort = Short.MAX_VALUE;
+        long theLong = Long.MAX_VALUE;
+        float theFloat = Float.MAX_VALUE;
+        double theDouble = Double.MAX_VALUE;
+        char theChar = 'a';
+        boolean theBoolean = Boolean.TRUE;
+
+        PrimitiveSerializer p = new PrimitiveSerializer();
+        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+        DataOutputStream dout = new DataOutputStream(bout);
+
+        byte[] bytesString = theString.getBytes();
+        assertEquals(theString, p.fromBytes(String.class, bytesString));
+
+        dout.writeInt(theInt);
+        byte[] bytesInt = bout.toByteArray();
+        assertEquals(theInt, p.fromBytes(int.class, bytesInt));
+        bout.reset();
+
+        dout.writeByte(theByte);
+        byte[] bytesByte = bout.toByteArray();
+        assertEquals(theByte, p.fromBytes(byte.class, bytesByte));
+        bout.reset();
+
+        dout.writeShort(theShort);
+        byte[] bytesShort = bout.toByteArray();
+        assertEquals(theShort, p.fromBytes(short.class, bytesShort));
+        bout.reset();
+
+        dout.writeLong(theLong);
+        byte[] bytesLong = bout.toByteArray();
+        assertEquals(theLong, p.fromBytes(long.class, bytesLong));
+        bout.reset();
+
+        dout.writeFloat(theFloat);
+        byte[] bytesFloat = bout.toByteArray();
+        assertEquals(theFloat, p.fromBytes(float.class, bytesFloat));
+        bout.reset();
+
+        dout.writeDouble(theDouble);
+        byte[] bytesDouble = bout.toByteArray();
+        assertEquals(theDouble, p.fromBytes(double.class, bytesDouble));
+        bout.reset();
+
+        dout.writeChar(theChar);
+        byte[] bytesChar = bout.toByteArray();
+        assertEquals(theChar, p.fromBytes(char.class, bytesChar));
+        bout.reset();
+
+        dout.writeBoolean(theBoolean);
+        byte[] bytesBoolean = bout.toByteArray();
+        assertEquals(theBoolean, p.fromBytes(boolean.class, bytesBoolean));
         bout.reset();
     }
 }
