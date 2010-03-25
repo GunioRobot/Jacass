@@ -66,6 +66,12 @@ public class ColumnCrudTest {
         assertEquals(theDouble, cc.getDouble(getColumnKey("theDouble")), 0);
         assertEquals(theChar, cc.getChar(getColumnKey("theChar")));
         assertEquals(theBoolean, cc.getBoolean(getColumnKey("theBoolean")));
+
+        for (String s : varNameBase) {
+            Field field = getClass().getField("the" + s);
+            columnKey.setColumnName(field.getName());
+            cc.remove(columnKey);
+        }
     }
 
     @Test
@@ -78,6 +84,6 @@ public class ColumnCrudTest {
         assertEquals(theFloat, cc.getFloat(getColumnKey("bsFloat"), theFloat), 0);
         assertEquals(theDouble, cc.getDouble(getColumnKey("bsDouble"), theDouble), 0);
         assertEquals(theChar, cc.getChar(getColumnKey("bsChar"), theChar));
-        assertEquals(theBoolean, cc.getBoolean(getColumnKey("bsBoolean"), theBoolean));        
+        assertEquals(theBoolean, cc.getBoolean(getColumnKey("bsBoolean"), theBoolean));
     }
 }
