@@ -12,13 +12,21 @@ public class PrimitiveSerializer implements Serializer {
     static {
         typeMap.put("java.lang.String", SuppportedType.STRING);
         typeMap.put("int", SuppportedType.INT);
+        typeMap.put("java.lang.Integer", SuppportedType.INT);
         typeMap.put("byte", SuppportedType.BYTE);
+        typeMap.put("java.lang.Byte", SuppportedType.BYTE);
         typeMap.put("short", SuppportedType.SHORT);
+        typeMap.put("java.lang.Short", SuppportedType.SHORT);
         typeMap.put("long", SuppportedType.LONG);
+        typeMap.put("java.lang.Long", SuppportedType.LONG);
         typeMap.put("float", SuppportedType.FLOAT);
+        typeMap.put("java.lang.Float", SuppportedType.FLOAT);
         typeMap.put("double", SuppportedType.DOUBLE);
+        typeMap.put("java.lang.Double", SuppportedType.DOUBLE);
         typeMap.put("char", SuppportedType.CHAR);
+        typeMap.put("java.lang.Character", SuppportedType.CHAR);
         typeMap.put("boolean", SuppportedType.BOOLEAN);
+        typeMap.put("java.lang.Boolean", SuppportedType.BOOLEAN);
     }
 
     public static SuppportedType getClassCode(Class cls) {
@@ -40,8 +48,9 @@ public class PrimitiveSerializer implements Serializer {
         try {
             SuppportedType classCode = PrimitiveSerializer.getClassCode(cls);
             if (classCode == null) {
-                // TODO:
+                return null;
             }
+            
             switch (classCode) {
                 case INT:
                     dout.writeInt((Integer) value);
