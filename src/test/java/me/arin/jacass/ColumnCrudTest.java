@@ -47,7 +47,8 @@ public class ColumnCrudTest {
 
     @Test
     public void testSetAndGetAndRemoveStandard() throws Exception {
-        String[] varNameBase = new String[]{"String", "Int", "Byte", "Short", "Long", "Float", "Double", "Char", "Boolean"};
+        String[] varNameBase = new String[]{"String", "Int", "Byte", "Short", "Long", "Float", "Double",
+                                            "Char", "Boolean"};
 
         ColumnKey columnKey = getColumnKey(null);
         for (String s : varNameBase) {
