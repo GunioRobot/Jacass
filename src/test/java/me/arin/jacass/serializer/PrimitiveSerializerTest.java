@@ -12,21 +12,21 @@ import java.util.Arrays;
  * Time: 1:06:44 PM
  */
 public class PrimitiveSerializerTest extends TestCase {
+    String theString = "theString";
+    int theInt = Integer.MAX_VALUE;
+    byte theByte = Byte.MAX_VALUE;
+    short theShort = Short.MAX_VALUE;
+    long theLong = Long.MAX_VALUE;
+    float theFloat = Float.MAX_VALUE;
+    double theDouble = Double.MAX_VALUE;
+    char theChar = 'a';
+    boolean theBoolean = Boolean.TRUE;
+
+    PrimitiveSerializer p = new PrimitiveSerializer();
+    ByteArrayOutputStream bout = new ByteArrayOutputStream();
+    DataOutputStream dout = new DataOutputStream(bout);
+
     public void testToBytesWithType() throws Exception {
-        String theString = "theString";
-        int theInt = Integer.MAX_VALUE;
-        byte theByte = Byte.MAX_VALUE;
-        short theShort = Short.MAX_VALUE;
-        long theLong = Long.MAX_VALUE;
-        float theFloat = Float.MAX_VALUE;
-        double theDouble = Double.MAX_VALUE;
-        char theChar = 'a';
-        boolean theBoolean = Boolean.TRUE;
-
-        PrimitiveSerializer p = new PrimitiveSerializer();
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        DataOutputStream dout = new DataOutputStream(bout);
-
         assertTrue(Arrays.equals(theString.getBytes(), p.toBytes(String.class, theString)));
 
         dout.writeInt(theInt);
@@ -63,20 +63,6 @@ public class PrimitiveSerializerTest extends TestCase {
     }
 
     public void testToBytesWithoutType() throws Exception {
-        String theString = "theString";
-        int theInt = Integer.MAX_VALUE;
-        byte theByte = Byte.MAX_VALUE;
-        short theShort = Short.MAX_VALUE;
-        long theLong = Long.MAX_VALUE;
-        float theFloat = Float.MAX_VALUE;
-        double theDouble = Double.MAX_VALUE;
-        char theChar = 'a';
-        boolean theBoolean = Boolean.TRUE;
-
-        PrimitiveSerializer p = new PrimitiveSerializer();
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        DataOutputStream dout = new DataOutputStream(bout);
-
         assertTrue(Arrays.equals(theString.getBytes(), p.toBytes(theString)));
 
         dout.writeInt(theInt);
@@ -113,20 +99,6 @@ public class PrimitiveSerializerTest extends TestCase {
     }
 
     public void testFromBytes() throws Exception {
-        String theString = "theString";
-        int theInt = Integer.MAX_VALUE;
-        byte theByte = Byte.MAX_VALUE;
-        short theShort = Short.MAX_VALUE;
-        long theLong = Long.MAX_VALUE;
-        float theFloat = Float.MAX_VALUE;
-        double theDouble = Double.MAX_VALUE;
-        char theChar = 'a';
-        boolean theBoolean = Boolean.TRUE;
-
-        PrimitiveSerializer p = new PrimitiveSerializer();
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        DataOutputStream dout = new DataOutputStream(bout);
-
         byte[] bytesString = theString.getBytes();
         assertEquals(theString, p.fromBytes(String.class, bytesString));
 
