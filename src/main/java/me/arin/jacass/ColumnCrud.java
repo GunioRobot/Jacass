@@ -41,7 +41,7 @@ public class ColumnCrud {
         };
 
         try {
-            return executor.execute(command);
+            return executor.execute(key.getKeyspace(), command);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -172,7 +172,7 @@ public class ColumnCrud {
         };
 
         try {
-            executor.execute(command);
+            executor.execute(key.getKeyspace(), command);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -188,7 +188,7 @@ public class ColumnCrud {
         };
 
         try {
-            executor.execute(command);
+            executor.execute(key.getKeyspace(), command);
         } catch (Exception e) {
             e.printStackTrace();
         }

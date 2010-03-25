@@ -138,10 +138,14 @@ abstract public class BaseModel {
      */
     protected <T> T execute(Command<T> command) throws JacassException {
         try {
-            return Executor.get().execute(command);
+            return Executor.get(getRowPath().getKeyspace()).execute(this, command, getConsistencyLevel());
         } catch (Exception e) {
             throw new JacassException(e);
         }
+    }
+
+    protected ConsistencyLevel getConsistencyLevel() {
+        return ConsistencyLevel.ONE;
     }
 
     /**
@@ -469,6 +473,10 @@ abstract public class BaseModel {
                 throw new JacassException("No setter for " + column);
             }
         }
+    }
+
+    public String getKeyspace() {
+        return getRowPath().getKeyspace();
     }
 }
 

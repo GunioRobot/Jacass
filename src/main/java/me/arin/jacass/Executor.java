@@ -1,7 +1,9 @@
 package me.arin.jacass;
 
 import me.prettyprint.cassandra.dao.Command;
+import org.apache.cassandra.thrift.ConsistencyLevel;
 
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -15,20 +17,19 @@ import java.util.concurrent.ConcurrentHashMap;
  * against Cassandra
  */
 public class Executor {
-    protected String name;
     protected String keyspace;
-    protected String host;
-    protected int port;
+    protected ArrayList<String> host = new ArrayList<String>();
     protected static ConcurrentHashMap<String, Executor> exectors = new ConcurrentHashMap<String, Executor>();
     protected ColumnCrud columnCrud;
+    public static final String ALL_KEYSPACES = "*";
 
-    public static final String DEFAULT_EXECUTOR_NAME = "__default__";
-
-    protected Executor(String name, String keyspace, String host, int port) {
-        this.name = name;
+    protected Executor(String keyspace, String host, int port) {
         this.keyspace = keyspace;
-        this.host = host;
-        this.port = port;
+        this.host.add(getHostString(host, port));
+    }
+
+    protected static String getHostString(String host, int port) {
+        return new StringBuilder(host).append(":").append(port).toString();
     }
 
     public ColumnCrud getColumnCrud() {
@@ -39,42 +40,49 @@ public class Executor {
         return columnCrud;
     }
 
-    public static Executor get(String name) {
-        return exectors.get(name);
-    }
-
     public static Executor get() {
-        return get(DEFAULT_EXECUTOR_NAME);
+        return get(ALL_KEYSPACES);
     }
 
-    public static Executor add(String name, String keyspace, String host, int port) {
-        Executor executor = exectors.get(keyspace);
+    public static Executor get(String name) {
+        Executor executor = exectors.get(name);
 
         if (executor == null) {
-            executor = new Executor(name, keyspace, host, port);
-            exectors.put(name, executor);
+            return exectors.get(ALL_KEYSPACES);
         }
 
         return executor;
     }
 
+    public static Executor add(String host, int port) {
+        return add(ALL_KEYSPACES, host, port);
+    }
+
     public static Executor add(String keyspace, String host, int port) {
-        return add(DEFAULT_EXECUTOR_NAME, keyspace, host, port);
+        Executor executor = exectors.get(keyspace);
+
+        if (executor == null) {
+            executor = new Executor(keyspace, host, port);
+            exectors.put(keyspace, executor);
+        }
+
+        executor.host.add(getHostString(host, port));
+        return executor;
     }
 
-    public String getKeyspace() {
-        return keyspace;
+    protected <T> T execute(String keyspace, Command<T> command) throws Exception {
+        return execute(keyspace, command, ConsistencyLevel.ONE);
     }
 
-    public String getHost() {
-        return host;
+    protected <T> T execute(String keyspace, Command<T> command, ConsistencyLevel consistencyLevel) throws Exception {
+        return command.execute(host.toArray(new String[0]), keyspace, consistencyLevel);
     }
 
-    public int getPort() {
-        return port;
+    protected <T> T execute(BaseModel baseModel, Command<T> command) throws Exception {
+        return execute(baseModel.getKeyspace(), command, ConsistencyLevel.ONE);
     }
 
-    protected <T> T execute(Command<T> command) throws Exception {
-        return command.execute(host, port, keyspace);
+    protected <T> T execute(BaseModel baseModel, Command<T> command, ConsistencyLevel consistencyLevel) throws Exception {
+        return execute(baseModel.getKeyspace(), command, consistencyLevel);
     }
 }

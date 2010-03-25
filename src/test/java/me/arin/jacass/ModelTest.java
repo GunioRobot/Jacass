@@ -33,7 +33,7 @@ public class ModelTest {
     public static void setup() throws TTransportException, IOException, InterruptedException {
         embedded = new EmbeddedServerHelper(System.getProperty("user.dir"));
         embedded.setup();
-        Executor.add("Keyspace1", "localhost", 9170);
+        Executor.add("localhost", 9170);
     }
 
     @AfterClass
