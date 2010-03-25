@@ -48,7 +48,7 @@ public class ColumnCrudTest {
     @Test
     public void testSetAndGetAndRemoveStandard() throws Exception {
         String[] varNameBase = new String[]{"String", "Int", "Byte", "Short", "Long", "Float", "Double",
-                                            "Char", "Boolean"};
+                "Char", "Boolean"};
 
         ColumnKey columnKey = getColumnKey(null);
         for (String s : varNameBase) {
@@ -72,13 +72,23 @@ public class ColumnCrudTest {
             columnKey.setColumnName(field.getName());
             cc.remove(columnKey);
         }
+
+        assertEquals(null, cc.getString(getColumnKey("bsString"), null));
+        assertEquals(Integer.MIN_VALUE, cc.getInt(getColumnKey("bsInt"), Integer.MIN_VALUE));
+        assertEquals(Byte.MIN_VALUE, cc.getByte(getColumnKey("bsByte"), Byte.MIN_VALUE));
+        assertEquals(Short.MIN_VALUE, cc.getShort(getColumnKey("bsShort"), Short.MIN_VALUE));
+        assertEquals(Long.MAX_VALUE/2, cc.getLong(getColumnKey("bsLong"), Long.MAX_VALUE/2));
+        assertEquals(Float.MAX_VALUE/2, cc.getFloat(getColumnKey("bsFloat"), theFloat), Float.MAX_VALUE/2);
+        assertEquals(Double.MAX_VALUE/2, cc.getDouble(getColumnKey("bsDouble"), theDouble), Double.MAX_VALUE/2);
+        assertEquals('x', cc.getChar(getColumnKey("bsChar"), 'x'));
+        assertEquals(false, cc.getBoolean(getColumnKey("bsBoolean"), false));
     }
 
     @Test
     public void testGetWithDefaultValues() throws Exception {
         assertEquals(theString, cc.getString(getColumnKey("bsString"), theString));
         assertEquals(theInt, cc.getInt(getColumnKey("bsInt"), theInt));
-        assertEquals(theByte, cc.getByte(getColumnKey("bsByte"),theByte));
+        assertEquals(theByte, cc.getByte(getColumnKey("bsByte"), theByte));
         assertEquals(theShort, cc.getShort(getColumnKey("bsShort"), theShort));
         assertEquals(theLong, cc.getLong(getColumnKey("bsLong"), theLong));
         assertEquals(theFloat, cc.getFloat(getColumnKey("bsFloat"), theFloat), 0);
