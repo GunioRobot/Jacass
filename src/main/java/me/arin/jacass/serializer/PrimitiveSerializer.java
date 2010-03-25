@@ -1,5 +1,6 @@
 package me.arin.jacass.serializer;
 
+import me.arin.jacass.JacassException;
 import me.arin.jacass.Serializer;
 
 import java.io.*;
@@ -33,7 +34,7 @@ public class PrimitiveSerializer implements Serializer {
         return typeMap.get(cls.getName());
     }
 
-    public byte[] toBytes(Class cls, Object value) {
+    public byte[] toBytes(Class cls, Object value) throws JacassException {
         if (null == value) {
             return new byte[]{};
         }
@@ -48,7 +49,7 @@ public class PrimitiveSerializer implements Serializer {
         try {
             SuppportedType classCode = PrimitiveSerializer.getClassCode(cls);
             if (classCode == null) {
-                return null;
+                throw new JacassException("Unsupported type");
             }
             
             switch (classCode) {
@@ -96,7 +97,7 @@ public class PrimitiveSerializer implements Serializer {
         return bout.toByteArray();
     }
 
-    public byte[] toBytes(Object value) {
+    public byte[] toBytes(Object value) throws JacassException {
         return toBytes(value.getClass(), value);
     }
 

@@ -1,17 +1,27 @@
 package me.arin.jacass.serializer;
 
-import junit.framework.TestCase;
+import me.arin.jacass.JacassException;
+import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.util.Arrays;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * User: Arin Sarkissian
  * Date: Mar 23, 2010
  * Time: 1:06:44 PM
  */
-public class PrimitiveSerializerTest extends TestCase {
+
+class Crap {
+    
+}
+
+public class PrimitiveSerializerTest {
     String theString = "theString";
     int theInt = Integer.MAX_VALUE;
     byte theByte = Byte.MAX_VALUE;
@@ -26,6 +36,20 @@ public class PrimitiveSerializerTest extends TestCase {
     ByteArrayOutputStream bout = new ByteArrayOutputStream();
     DataOutputStream dout = new DataOutputStream(bout);
 
+    @Test
+    public void testEdgeCases() throws Exception {
+        assertTrue(Arrays.equals(new byte[]{}, p.toBytes(int.class, null)));
+
+        try {
+            p.toBytes(Crap.class, new Crap());
+        } catch (JacassException je) {
+            assertTrue(true);
+        }
+
+        "hello".equals(p.fromBytes("hello".getBytes()));
+    }
+
+    @Test
     public void testToBytesWithType() throws Exception {
         assertTrue(Arrays.equals(theString.getBytes(), p.toBytes(String.class, theString)));
 
@@ -62,6 +86,7 @@ public class PrimitiveSerializerTest extends TestCase {
         bout.reset();
     }
 
+    @Test
     public void testToBytesWithoutType() throws Exception {
         assertTrue(Arrays.equals(theString.getBytes(), p.toBytes(theString)));
 
@@ -98,6 +123,7 @@ public class PrimitiveSerializerTest extends TestCase {
         bout.reset();
     }
 
+    @Test
     public void testFromBytes() throws Exception {
         byte[] bytesString = theString.getBytes();
         assertEquals(theString, p.fromBytes(String.class, bytesString));

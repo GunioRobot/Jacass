@@ -12,9 +12,9 @@ import java.io.IOException;
  * Interface for (de)serializing Column values to/from Cassandra
  */
 public interface Serializer {
-    byte[] toBytes(Object value);
+    byte[] toBytes(Object value) throws JacassException;
 
-    byte[] toBytes(Class cls, Object value);
+    byte[] toBytes(Class cls, Object value) throws JacassException;
 
     Object fromBytes(byte[] bytes) throws IOException;
 

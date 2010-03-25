@@ -34,15 +34,70 @@
                     </systemProperties>
                     <forkMode>always</forkMode>
                     <additionalClasspathElements>
-                        <additionalClasspathElement>${basedir}/testlib/clhm-production-1.0.jar</additionalClasspathElement>
+                        <additionalClasspathElement>${basedir}/testlib/clhm-production-1.0.jar
+                        </additionalClasspathElement>
                         <additionalClasspathElement>${basedir}/testlib/flexjson-1.7.jar</additionalClasspathElement>
-                        <additionalClasspathElement>${basedir}/testlib/high-scale-lib-1.0.jar</additionalClasspathElement>
-                        <additionalClasspathElement>${basedir}/testlib/commons-collections-3.0.jar</additionalClasspathElement>
+                        <additionalClasspathElement>${basedir}/testlib/high-scale-lib-1.0.jar
+                        </additionalClasspathElement>
+                        <additionalClasspathElement>${basedir}/testlib/commons-collections-3.0.jar
+                        </additionalClasspathElement>
                     </additionalClasspathElements>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+                <configuration>
+                    <check>
+                        <branchRate>0</branchRate>
+                        <lineRate>0</lineRate>
+                        <haltOnFailure>true</haltOnFailure>
+                        <totalBranchRate>0</totalBranchRate>
+                        <totalLineRate>0</totalLineRate>
+                        <packageLineRate>0</packageLineRate>
+                        <packageBranchRate>0</packageBranchRate>
+                        <regexes>
+                        </regexes>
+                    </check>
+                    <formats>
+                        <format>html</format>
+                    </formats>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>clean</goal>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.5</source>
+                    <target>1.5</target>
                 </configuration>
             </plugin>
         </plugins>
     </build>
+
+    <reporting>
+        <outputDirectory>target/report</outputDirectory>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+                <configuration>
+                    <formats>
+                        <format>html</format>
+                    </formats>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
 
     <dependencyManagement>
         <dependencies>
