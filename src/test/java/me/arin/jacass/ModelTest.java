@@ -78,7 +78,7 @@ public class ModelTest {
 
         String bsKey = "balls";
         User u2 = new User();
-        
+
         u2.setKey(bsKey);
         assertEquals(bsKey, u2.getKey());
     }
@@ -93,15 +93,15 @@ public class ModelTest {
         b.setKey("b");
         b.save();
 
-        Map<String,BaseModel> users = new User().get(new String[]{"a", "b", "c"});
+        Map<String, BaseModel> users = new User().get(new String[]{"a", "b", "c"});
         assertNotNull(users.get("a"));
         assertNotNull(users.get("b"));
         assertNull(users.get("c"));
 
-        assertEquals("username-a", ((User)users.get("a")).getUsername());
-        assertEquals("username-b", ((User)users.get("b")).getUsername());
+        assertEquals("username-a", ((User) users.get("a")).getUsername());
+        assertEquals("username-b", ((User) users.get("b")).getUsername());
 
-        assertEquals("email-a", ((User)users.get("a")).getEmail());
-        assertEquals("email-b", ((User)users.get("b")).getEmail());        
+        assertEquals("email-a", ((User) users.get("a")).getEmail());
+        assertEquals("email-b", ((User) users.get("b")).getEmail());
     }
 }

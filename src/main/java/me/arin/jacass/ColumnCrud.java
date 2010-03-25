@@ -5,6 +5,7 @@ import me.prettyprint.cassandra.dao.Command;
 import me.prettyprint.cassandra.service.Keyspace;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnPath;
+import org.apache.cassandra.thrift.NotFoundException;
 
 import java.io.IOException;
 
@@ -15,7 +16,7 @@ import java.io.IOException;
  */
 
 /**
- * Column level mutation. Create, read, update & delete 
+ * Column level mutation. Create, read, update & delete
  */
 public class ColumnCrud {
     protected PrimitiveSerializer serializer;
@@ -30,13 +31,12 @@ public class ColumnCrud {
         Command<byte[]> command = new Command<byte[]>() {
             @Override
             public byte[] execute(Keyspace keyspace) throws Exception {
-                Column column = keyspace.getColumn(key.getKey(), getColumnPath(key));
-
-                if (column == null) {
-                    return null;
+                try {
+                    Column column = keyspace.getColumn(key.getKey(), getColumnPath(key));
+                    return column.getValue();
+                } catch (NotFoundException nfe) {
+                    return new byte[]{};
                 }
-
-                return column.getValue();
             }
         };
 
@@ -62,7 +62,13 @@ public class ColumnCrud {
 
     protected Object getColumnValue(ColumnKey key, Class cls) {
         try {
-            return serializer.fromBytes(cls, getRawBytes(key));
+            byte[] rawBytes = getRawBytes(key);
+
+            if (rawBytes.length == 0){
+                return null;
+            }
+            
+            return serializer.fromBytes(cls, rawBytes);
         } catch (IOException e) {
             e.printStackTrace();
             return null;
