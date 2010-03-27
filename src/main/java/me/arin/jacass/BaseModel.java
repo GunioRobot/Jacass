@@ -370,7 +370,7 @@ abstract public class BaseModel {
      * @return A map of Column objects
      * @throws JacassException
      */
-    protected Map<String, List<Column>> getCFMap() throws JacassException {
+    public Map<String, List<Column>> getCFMap() throws JacassException {
         getColumnInfo();
         List<Column> columnList = new ArrayList<Column>();
 
@@ -384,9 +384,9 @@ abstract public class BaseModel {
 
             try {
                 columnList.add(new Column(columnName.getBytes(),
-                                          getSerializer().toBytes(columnInfo.get(columnName).getCls(),
-                                                                  method.invoke(this)),
-                                          System.currentTimeMillis()));
+                        getSerializer().toBytes(columnInfo.get(columnName).getCls(),
+                                method.invoke(this)),
+                        System.currentTimeMillis()));
             } catch (Exception e) {
                 throw new JacassException("Could not serialize columns", e);
             }

@@ -104,4 +104,21 @@ public class ModelTest {
         assertEquals("email-a", ((User) users.get("a")).getEmail());
         assertEquals("email-b", ((User) users.get("b")).getEmail());
     }
+
+    @Test
+    public void testColumnInfo() {
+        User user = new User("username", "email");
+        Map<String, ColumnInfo> columnInfo = user.getColumnInfo();
+
+        assertTrue(! columnInfo.isEmpty());
+        ColumnInfo usernameColumn = columnInfo.get("username");
+        assertNotNull(usernameColumn);
+        assertNotNull(columnInfo.get("email"));
+
+        assertTrue(usernameColumn instanceof ColumnInfo);
+        assertEquals("username", usernameColumn.getName());
+        assertEquals(String.class, usernameColumn.getCls());
+        assertNull(usernameColumn.getIndexData());
+        assertFalse(usernameColumn.isIndexed());
+    }
 }
