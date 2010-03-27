@@ -110,15 +110,21 @@ public class ModelTest {
         User user = new User("username", "email");
         Map<String, ColumnInfo> columnInfo = user.getColumnInfo();
 
-        assertTrue(! columnInfo.isEmpty());
+        ColumnInfo emailColumn = columnInfo.get("email");
         ColumnInfo usernameColumn = columnInfo.get("username");
+
+        assertTrue(! columnInfo.isEmpty());
         assertNotNull(usernameColumn);
-        assertNotNull(columnInfo.get("email"));
+        assertNotNull(emailColumn);
 
         assertTrue(usernameColumn instanceof ColumnInfo);
         assertEquals("username", usernameColumn.getName());
         assertEquals(String.class, usernameColumn.getCls());
         assertNull(usernameColumn.getIndexData());
         assertFalse(usernameColumn.isIndexed());
+
+        assertNotNull(emailColumn.getIndexData());
+        assertTrue(emailColumn.getIndexData().isUnique());
+        assertFalse(emailColumn.getIndexData().isRequired());
     }
 }

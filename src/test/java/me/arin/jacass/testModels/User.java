@@ -1,6 +1,7 @@
 package me.arin.jacass.testModels;
 
 import me.arin.jacass.BaseModel;
+import me.arin.jacass.annotations.IndexedProperty;
 import me.arin.jacass.annotations.Model;
 import me.arin.jacass.annotations.SimpleProperty;
 
@@ -10,6 +11,7 @@ public class User extends BaseModel {
     String username;
 
     @SimpleProperty
+    @IndexedProperty(unique = true, required = false)
     String email;
 
     public String getUsername() {

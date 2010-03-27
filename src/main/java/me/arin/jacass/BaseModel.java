@@ -267,7 +267,7 @@ abstract public class BaseModel {
                 if (mp != null || idx != null) {
                     ColumnInfo ci = new ColumnInfo(field.getName(), field.getType());
                     if (idx != null) {
-                        ci.setIndexData(new IndexInfo(idx.required(), idx.required()));
+                        ci.setIndexData(new IndexInfo(idx.required(), idx.unique()));
                     }
 
                     columnInfo.put(field.getName(), ci);
