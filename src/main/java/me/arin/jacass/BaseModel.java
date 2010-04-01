@@ -28,6 +28,7 @@ abstract public class BaseModel {
     protected Map<String, ColumnInfo> columnInfo;
     protected Serializer serializer;
     protected HashMap<String, byte[]> originalIndexValues = new HashMap<String, byte[]>();
+    private Executor executor;
 
     public BaseModel() {
 
@@ -138,10 +139,19 @@ abstract public class BaseModel {
      */
     protected <T> T execute(Command<T> command) throws JacassException {
         try {
-            return Executor.get(getRowPath().getKeyspace()).execute(this, command, getConsistencyLevel());
+            Executor executor = getExectutor();
+            return executor.execute(this, command, getConsistencyLevel());
         } catch (Exception e) {
             throw new JacassException(e);
         }
+    }
+
+    private <T> Executor getExectutor() {
+        if (executor == null) {
+            executor = Executor.get(getRowPath().getKeyspace());
+        }
+
+        return executor;
     }
 
     protected ConsistencyLevel getConsistencyLevel() {
@@ -296,10 +306,44 @@ abstract public class BaseModel {
 
         List<Column> columns = cfMap.get(getRowPath().getColumnFamily());
         for (Column column : columns) {
-            byte[] ogValue = originalIndexValues.get(new String(column.getName()));
+            final String columnName = new String(column.getName());
+            final IndexInfo indexInfo = columnInfo.get(columnName).getIndexData();
+
+            if (indexInfo == null) {
+                continue;
+            }
+
+            Class columnType;
+            Object columnValue;
+            
+            try {
+                final Field f = this.getClass().getDeclaredField(columnName);
+                f.setAccessible(true);
+                columnType = f.getType();
+                columnValue = f.get(this);
+            } catch (Exception e) {
+                throw new JacassIndexException("Could not manage index data for " + columnName, e);
+            }
+
+            if (indexInfo.isRequired() && columnValue == null) {
+                throw new JacassIndexException(columnName + " is required and cannot be null");
+            }
+
+            final byte[] ogValue = originalIndexValues.get(columnName);
+            final ColumnCrud columnCrud = getExectutor().getColumnCrud();
+
             if (ogValue != null) {
                 byte[] newValue = column.getValue();
                 if (!Arrays.equals(ogValue, newValue)) {
+                    columnCrud.remove(getIndexColumnKey(column));
+
+                    if (indexInfo.isUnique()) {
+
+                    } else {
+
+                    }
+                    
+                    System.out.println("heh");
                     // TODO: delete old index
                     // TODO: create new index
                 }
@@ -308,6 +352,30 @@ abstract public class BaseModel {
 
         execute(command);
         return this;
+    }
+
+    /**
+     * // unique
+     * CF {
+     *     column_name.unique_index : {
+     *         value: object_key
+     *     }
+     * }
+     *
+     * // not unique
+     * CF {
+     *      column_name.value : {
+     *          object_key : value
+     *    }
+     * }
+     *
+     *
+     * @param column
+     * @return
+     */
+    private ColumnKey getIndexColumnKey(Column column) {
+        return new ColumnKey(getRowPath().getKeyspace(), getRowPath().getSuperColumn(),
+                getRowPath().getColumnFamily(), "idxKey", "idxColumn");
     }
 
     /**
