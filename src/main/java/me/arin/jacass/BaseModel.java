@@ -353,7 +353,7 @@ abstract public class BaseModel {
      * @return The success of this operation true|false
      */
     public static boolean remove(Class modelClass, String key) throws JacassException {
-        BaseModel m = null;
+        BaseModel m;
         try {
             m = (BaseModel) modelClass.newInstance();
         } catch (Exception e) {
