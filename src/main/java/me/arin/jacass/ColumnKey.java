@@ -10,6 +10,8 @@ public class ColumnKey {
     private String columnFamily = "";
     private String superColumn = "";
     private String key = "";
+
+    // TODO: should this be a byte[]
     private String columnName;
 
     public ColumnKey(String keyspace, String superColumn, String columnFamily, String key, String columnName) {

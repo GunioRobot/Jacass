@@ -288,6 +288,10 @@ abstract public class BaseModel {
         return columnInfo;
     }
 
+    protected ColumnInfo getColumnInfo(String columName) {
+        return getColumnInfo().get(columName);
+    }
+
     /**
      * Persist this object
      *
@@ -315,7 +319,7 @@ abstract public class BaseModel {
 
             Class columnType;
             Object columnValue;
-            
+
             try {
                 final Field f = this.getClass().getDeclaredField(columnName);
                 f.setAccessible(true);
@@ -342,7 +346,7 @@ abstract public class BaseModel {
                     } else {
 
                     }
-                    
+
                     System.out.println("heh");
                     // TODO: delete old index
                     // TODO: create new index
@@ -357,25 +361,44 @@ abstract public class BaseModel {
     /**
      * // unique
      * CF {
-     *     column_name.unique_index : {
-     *         value: object_key
-     *     }
+     *      column_name.unique_index : { // row key
+     *          value: object_key
+     *    }
      * }
      *
      * // not unique
      * CF {
-     *      column_name.value : {
+     *      column_name.value : {       // row key
      *          object_key : value
      *    }
      * }
      *
+     * TODO: this shits a mess
      *
      * @param column
      * @return
      */
-    private ColumnKey getIndexColumnKey(Column column) {
-        return new ColumnKey(getRowPath().getKeyspace(), getRowPath().getSuperColumn(),
-                getRowPath().getColumnFamily(), "idxKey", "idxColumn");
+    private ColumnKey getIndexColumnKey(Column column) throws JacassIndexException {
+        final String columnName = new String(column.getName());
+        ColumnInfo columnInfo = getColumnInfo(columnName);
+
+        if (! columnInfo.isIndexed()) {
+            throw new JacassIndexException(columnName + " is not an indexed column");
+        }
+
+        ColumnKey columnKey = new ColumnKey(getRowPath().getKeyspace(), getRowPath().getSuperColumn(),
+                                            getRowPath().getColumnFamily(), null, null);
+
+        IndexInfo indexData = columnInfo.getIndexData();
+        if (indexData.isUnique()) {
+            columnKey.setKey(columnName + "__unique__index__"); // TODO: that's ghetto
+            columnKey.setColumnName(new String(column.getValue()));
+        } else {
+            columnKey.setKey(columnName + "." + new String(column.getValue()));
+            columnKey.setColumnName(getKey(true));            
+        }
+
+        return columnKey;
     }
 
     /**
@@ -452,9 +475,9 @@ abstract public class BaseModel {
 
             try {
                 columnList.add(new Column(columnName.getBytes(),
-                        getSerializer().toBytes(columnInfo.get(columnName).getCls(),
-                                method.invoke(this)),
-                        System.currentTimeMillis()));
+                                          getSerializer().toBytes(columnInfo.get(columnName).getCls(),
+                                                                  method.invoke(this)),
+                                          System.currentTimeMillis()));
             } catch (Exception e) {
                 throw new JacassException("Could not serialize columns", e);
             }
