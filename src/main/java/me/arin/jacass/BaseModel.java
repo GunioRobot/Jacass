@@ -29,7 +29,6 @@ abstract public class BaseModel {
     protected Serializer serializer;
     protected HashMap<String, byte[]> originalIndexValues = new HashMap<String, byte[]>();
     
-    private HashMap<String,Field> fieldCache = new HashMap<String, Field>();
     private Executor executor;
 
     public BaseModel() {
