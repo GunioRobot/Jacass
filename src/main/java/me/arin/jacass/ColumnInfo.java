@@ -1,16 +1,17 @@
 package me.arin.jacass;
 
+import java.lang.reflect.Field;
+
 /**
  * Info about a Column
  */
 class ColumnInfo {
-    private String name;
-    private Class cls;
+    private final Field field;
     private IndexInfo indexData;
 
-    ColumnInfo(String name, Class cls) {
-        this.name = name;
-        this.cls = cls;
+    ColumnInfo(Field field) {
+        this.field = field;
+        this.field.setAccessible(true);
     }
 
     public void setIndexData(IndexInfo indexData) {
@@ -22,11 +23,15 @@ class ColumnInfo {
     }
 
     public String getName() {
-        return name;
+        return field.getName();
     }
 
     public Class getCls() {
-        return cls;
+        return field.getType();
+    }
+    
+    public Field getField() {
+        return field;
     }
 
     public IndexInfo getIndexData() {

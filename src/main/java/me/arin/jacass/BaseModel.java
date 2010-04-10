@@ -25,7 +25,7 @@ abstract public class BaseModel {
     protected String key;
     protected static final int DEFAULT_MAX_COLUMNS = 100;
     protected RowPath rowPath;
-    protected Map<String, ColumnInfo> columnInfo;
+    protected Map<String, ColumnInfo> columnInfos;
     protected Serializer serializer;
     protected HashMap<String, byte[]> originalIndexValues = new HashMap<String, byte[]>();
     
@@ -267,26 +267,28 @@ abstract public class BaseModel {
      *
      * @return Info about all the members we need to persist
      */
-    protected Map<String, ColumnInfo> getColumnInfo() {
-        if (columnInfo == null) {
-            columnInfo = new HashMap<String, ColumnInfo>();
+    protected Map<String, ColumnInfo> getColumnInfos() {
+        if (columnInfos == null) {
+            // have a map of the fieldname to columnInfo object
+            // need a map of columnName to field
+            columnInfos = new HashMap<String, ColumnInfo>();
             Field[] declaredFields = this.getClass().getDeclaredFields();
             for (Field field : declaredFields) {
                 SimpleProperty mp = field.getAnnotation(SimpleProperty.class);
                 IndexedProperty idx = field.getAnnotation(IndexedProperty.class);
                 
                 if (mp != null || idx != null) {
-                    ColumnInfo ci = new ColumnInfo(field.getName(), field.getType());
+                    ColumnInfo ci = new ColumnInfo(field);
                     if (idx != null) {
                         ci.setIndexData(new IndexInfo(idx.required(), idx.unique()));
                     }
 
-                    columnInfo.put(field.getName(), ci);
+                    columnInfos.put(field.getName(), ci);
                 }
             }
         }
 
-        return columnInfo;
+        return columnInfos;
     }
 
     /**
@@ -308,7 +310,7 @@ abstract public class BaseModel {
         List<Column> columns = cfMap.get(getRowPath().getColumnFamily());
         for (Column column : columns) {
             final String columnName = new String(column.getName());
-            final IndexInfo indexInfo = columnInfo.get(columnName).getIndexData();
+            final IndexInfo indexInfo = columnInfos.get(columnName).getIndexData();
 
             if (indexInfo == null) {
                 continue;
@@ -318,14 +320,10 @@ abstract public class BaseModel {
             Object columnValue;
             
             try {
-                Field f = fieldCache.get(columnName);
-                if ( f == null ) {
-                    f = this.getClass().getDeclaredField(columnName);
-                    f.setAccessible(true);
-                    fieldCache.put(columnName, f);                    
-                }                
-                columnType = f.getType();
-                columnValue = f.get(this);
+                ColumnInfo columnInfo = columnInfos.get(columnName);
+                                
+                columnType = columnInfo.getCls();
+                columnValue = columnInfo.getField().get(this);
             } catch (Exception e) {
                 throw new JacassIndexException("Could not manage index data for " + columnName, e);
             }
@@ -444,10 +442,10 @@ abstract public class BaseModel {
      * @throws JacassException
      */
     public Map<String, List<Column>> getCFMap() throws JacassException {
-        getColumnInfo();
+        getColumnInfos();
         List<Column> columnList = new ArrayList<Column>();
 
-        for (String columnName : columnInfo.keySet()) {
+        for (String columnName : columnInfos.keySet()) {
             String getterName = (new StringBuilder("get").append(StringUtils.capitalize(columnName))).toString();
             Method method = MethodUtils.getAccessibleMethod(this.getClass(), getterName, new Class[]{});
 
@@ -457,7 +455,7 @@ abstract public class BaseModel {
 
             try {
                 columnList.add(new Column(columnName.getBytes(),
-                        getSerializer().toBytes(columnInfo.get(columnName).getCls(),
+                        getSerializer().toBytes(columnInfos.get(columnName).getCls(),
                                 method.invoke(this)),
                         System.currentTimeMillis()));
             } catch (Exception e) {
@@ -509,12 +507,12 @@ abstract public class BaseModel {
      * @throws JacassException
      */
     protected void injectColumns(List<Column> columns) throws JacassException {
-        getColumnInfo();
+        getColumnInfos();
 
         for (Column column : columns) {
             String columnName = new String(column.getName());
             String setterName = (new StringBuilder("set").append(StringUtils.capitalize(columnName))).toString();
-            ColumnInfo ci = columnInfo.get(columnName);
+            ColumnInfo ci = columnInfos.get(columnName);
             Class columnType = ci.getCls();
 
             if (null == columnType) {
