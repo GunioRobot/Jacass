@@ -28,6 +28,8 @@ abstract public class BaseModel {
     protected Map<String, ColumnInfo> columnInfo;
     protected Serializer serializer;
     protected HashMap<String, byte[]> originalIndexValues = new HashMap<String, byte[]>();
+    
+    private HashMap<String,Field> fieldCache = new HashMap<String, Field>();
     private Executor executor;
 
     public BaseModel() {
@@ -268,12 +270,11 @@ abstract public class BaseModel {
     protected Map<String, ColumnInfo> getColumnInfo() {
         if (columnInfo == null) {
             columnInfo = new HashMap<String, ColumnInfo>();
-
             Field[] declaredFields = this.getClass().getDeclaredFields();
             for (Field field : declaredFields) {
                 SimpleProperty mp = field.getAnnotation(SimpleProperty.class);
                 IndexedProperty idx = field.getAnnotation(IndexedProperty.class);
-
+                
                 if (mp != null || idx != null) {
                     ColumnInfo ci = new ColumnInfo(field.getName(), field.getType());
                     if (idx != null) {
@@ -317,8 +318,12 @@ abstract public class BaseModel {
             Object columnValue;
             
             try {
-                final Field f = this.getClass().getDeclaredField(columnName);
-                f.setAccessible(true);
+                Field f = fieldCache.get(columnName);
+                if ( f == null ) {
+                    f = this.getClass().getDeclaredField(columnName);
+                    f.setAccessible(true);
+                    fieldCache.put(columnName, f);                    
+                }                
                 columnType = f.getType();
                 columnValue = f.get(this);
             } catch (Exception e) {
