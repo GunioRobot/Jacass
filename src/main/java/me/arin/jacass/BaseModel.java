@@ -548,4 +548,61 @@ abstract public class BaseModel {
     public String getKeyspace() {
         return getRowPath().getKeyspace();
     }
+
+	/**
+	 * Load all available objects by their row keys
+	 *
+	 * @return Map indexed by the rowkey
+	 */
+	public Map<String, BaseModel> loadAll() {
+		return load("","");
+	}
+
+	/**
+	 * Load range of available objects
+	 *
+	 * @param startKey
+	 * @param finishKey
+	 * @return Map indexed by the rowkey
+	 */
+	public Map<String, BaseModel> load(final String startKey, final String finishKey) {
+	    getRowPath();
+
+	    final ColumnParent columnParent = new ColumnParent(rowPath.getColumnFamily());
+	    String superColumn = rowPath.getSuperColumn();
+
+	    if (!"".equals(superColumn)) {
+	        columnParent.setSuper_column(superColumn.getBytes());
+	    }
+
+	    final SlicePredicate sp = new SlicePredicate();
+	    sp.setSlice_range(new SliceRange(new byte[]{}, new byte[]{}, false, getMaxNumColumns()));
+
+	    Command<Map<String, List<Column>>> command = new Command<Map<String, List<Column>>>() {
+	        @Override
+	        public Map<String, List<Column>> execute(Keyspace keyspace) throws Exception {
+	            return keyspace.getRangeSlice(columnParent, sp, startKey, finishKey, getMaxNumColumns());
+	        }
+	    };
+
+	    Map<String, BaseModel> rtn = new HashMap<String, BaseModel>();
+
+	    try {
+	        Map<String, List<Column>> stuff = execute(command);
+	        for (String k : stuff.keySet()) {
+	            List<Column> columns = stuff.get(k);
+	            if (columns == null || columns.isEmpty()) {
+	                continue;
+	            }
+
+	            BaseModel bm = this.getClass().newInstance();
+	            bm.injectColumns(columns);
+	            rtn.put(k, bm);
+	        }
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+
+	    return rtn;
+	}
 }
