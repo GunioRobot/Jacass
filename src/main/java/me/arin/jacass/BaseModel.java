@@ -198,17 +198,7 @@ abstract public class BaseModel {
         Map<String, BaseModel> rtn = new HashMap<String, BaseModel>();
 
         try {
-            Map<String, List<Column>> stuff = execute(command);
-            for (String k : stuff.keySet()) {
-                List<Column> columns = stuff.get(k);
-                if (columns == null || columns.isEmpty()) {
-                    continue;
-                }
-
-                BaseModel bm = this.getClass().newInstance();
-                bm.injectColumns(columns);
-                rtn.put(k, bm);
-            }
+        	copyMap(rtn,execute(command));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -588,21 +578,26 @@ abstract public class BaseModel {
 	    Map<String, BaseModel> rtn = new HashMap<String, BaseModel>();
 
 	    try {
-	        Map<String, List<Column>> stuff = execute(command);
-	        for (String k : stuff.keySet()) {
-	            List<Column> columns = stuff.get(k);
-	            if (columns == null || columns.isEmpty()) {
-	                continue;
-	            }
-
-	            BaseModel bm = this.getClass().newInstance();
-	            bm.injectColumns(columns);
-	            rtn.put(k, bm);
-	        }
+	    	copyMap(rtn, execute(command));
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	    }
 
 	    return rtn;
+	}
+
+	private void copyMap(Map<String, BaseModel> dest, Map<String, List<Column>> source) throws InstantiationException, IllegalAccessException, JacassException
+	{
+		for (String k : source.keySet()) {
+			List<Column> columns = source.get(k);
+
+			if (columns == null || columns.isEmpty()) {
+				continue;
+			}
+
+			BaseModel bm = this.getClass().newInstance();
+			bm.injectColumns(columns);
+			dest.put(k, bm);
+		}
 	}
 }
