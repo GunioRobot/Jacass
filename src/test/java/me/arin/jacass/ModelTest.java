@@ -108,7 +108,7 @@ public class ModelTest {
     @Test
     public void testColumnInfo() {
         User user = new User("username", "email");
-        Map<String, ColumnInfo> columnInfo = user.getColumnInfo();
+        Map<String, ColumnInfo> columnInfo = user.getColumnInfos();
 
         ColumnInfo emailColumn = columnInfo.get("email");
         ColumnInfo usernameColumn = columnInfo.get("username");
