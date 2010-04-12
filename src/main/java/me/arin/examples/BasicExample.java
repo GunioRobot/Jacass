@@ -31,7 +31,7 @@ public class BasicExample {
         u3.save();
 
         // now do a multiget on the 2 distinct users and spit out their info        
-        Map<String, BaseModel> userMap = new User().get(new String[]{u3.getKey(), u.getKey()});
+        Map<String, BaseModel> userMap = new User().load(new String[]{u3.getKey(), u.getKey()});
         for (String key : userMap.keySet()) {
             User user = (User) userMap.get(key);
 

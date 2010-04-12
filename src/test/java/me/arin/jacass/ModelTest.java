@@ -93,7 +93,7 @@ public class ModelTest {
         b.setKey("b");
         b.save();
 
-        Map<String, BaseModel> users = new User().get(new String[]{"a", "b", "c"});
+        Map<String, BaseModel> users = new User().load(new String[]{"a", "b", "c"});
         assertNotNull(users.get("a"));
         assertNotNull(users.get("b"));
         assertNull(users.get("c"));

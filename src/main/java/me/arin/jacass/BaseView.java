@@ -132,7 +132,7 @@ abstract public class BaseView {
             }
 
             BaseModel bm = (BaseModel) getObjectClass().newInstance();
-            Map<String, BaseModel> map = bm.get(stringKeys);
+            Map<String, BaseModel> map = bm.load(stringKeys);
 
 
             List<BaseModel> rtn = new ArrayList<BaseModel>();

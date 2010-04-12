@@ -165,8 +165,8 @@ abstract public class BaseModel {
      * @param rowKeys
      * @return Map indexed by the rowkey
      */
-    public Map<String, BaseModel> get(final String[] rowKeys) {
-        return get(Arrays.asList(rowKeys));
+    public Map<String, BaseModel> load(final String[] rowKeys) {
+        return load(Arrays.asList(rowKeys));
     }
 
     /**
@@ -175,7 +175,7 @@ abstract public class BaseModel {
      * @param rowKeys
      * @return Map indexed by the rowkey
      */
-    public Map<String, BaseModel> get(final List<String> rowKeys) {
+    public Map<String, BaseModel> load(final List<String> rowKeys) {
         getRowPath();
 
         final ColumnParent columnParent = new ColumnParent(rowPath.getColumnFamily());
