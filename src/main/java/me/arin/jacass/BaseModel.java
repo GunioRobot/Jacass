@@ -539,14 +539,7 @@ abstract public class BaseModel {
         return getRowPath().getKeyspace();
     }
 
-	/**
-	 * Load all available objects by their row keys
-	 *
-	 * @return Map indexed by the rowkey
-	 */
-	public Map<String, BaseModel> loadAll() {
-		return load("","");
-	}
+
 
 	/**
 	 * Load range of available objects

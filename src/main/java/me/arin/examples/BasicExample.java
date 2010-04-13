@@ -42,7 +42,7 @@ public class BasicExample {
         }
 
         // See all available items in database
-        Map<String, BaseModel> userMap2 = new User().loadAll();
+        Map<String, BaseModel> userMap2 = new User().load(new String[]{u3.getKey(), u.getKey()});
         System.out.println("load all:");
         for (String key : userMap2.keySet()) {
             User user = (User) userMap2.get(key);
