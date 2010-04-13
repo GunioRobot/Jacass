@@ -596,6 +596,7 @@ abstract public class BaseModel {
 			}
 
 			BaseModel bm = this.getClass().newInstance();
+			bm.setKey(k);
 			bm.injectColumns(columns);
 			dest.put(k, bm);
 		}
