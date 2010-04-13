@@ -29,4 +29,9 @@ public class ColumnKeyValue {
     public void setColumnValue(byte[] columnValue) {
         this.columnValue = columnValue;
     }
+
+    @Override
+    public String toString() {
+        return columnKey.toString() + ":" + new String(columnValue);
+    }
 }

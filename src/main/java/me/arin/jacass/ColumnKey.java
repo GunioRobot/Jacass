@@ -68,4 +68,16 @@ public class ColumnKey {
     public void setColumnName(String columnName) {
         this.columnName = columnName;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(keyspace).append("/").append(columnFamily);
+
+        if (superColumn != null) {
+            sb.append(superColumn).append("/");
+        }
+
+        sb.append(key);
+        return sb.toString();
+    }
 }

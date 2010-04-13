@@ -309,6 +309,16 @@ abstract public class BaseModel {
         };
 
         List<Column> columns = cfMap.get(getRowPath().getColumnFamily());
+        execute(command);
+
+        if (! originalIndexValues.isEmpty()) {
+            saveIndexes(columns);
+        }
+
+        return this;
+    }
+
+    private void saveIndexes(List<Column> columns) throws JacassException {
         for (Column column : columns) {
             final String columnName = new String(column.getName());
             final IndexInfo indexInfo = columnInfo.get(columnName).getIndexData();
@@ -334,28 +344,16 @@ abstract public class BaseModel {
             }
 
             final byte[] ogValue = originalIndexValues.get(columnName);
-            final ColumnCrud columnCrud = getExectutor().getColumnCrud();
 
             if (ogValue != null) {
-                byte[] newValue = column.getValue();
-                if (!Arrays.equals(ogValue, newValue)) {
-                    columnCrud.remove(getIndexColumnKey(column));
+                byte[] newValueBytes = getSerializer().toBytes(columnType, columnValue);
 
-                    if (indexInfo.isUnique()) {
-
-                    } else {
-
-                    }
-
-                    System.out.println("heh");
-                    // TODO: delete old index
-                    // TODO: create new index
+                if (!Arrays.equals(ogValue, newValueBytes)) {
+                    ColumnKeyValue columnKeyValue = getIndexColumnKeyValue(column, newValueBytes);
+                    System.out.println(columnKeyValue);
                 }
             }
         }
-
-        execute(command);
-        return this;
     }
 
     /**
@@ -376,9 +374,10 @@ abstract public class BaseModel {
      * TODO: this shits a mess
      *
      * @param column
+     * @param columnValue
      * @return
      */
-    private ColumnKey getIndexColumnKey(Column column) throws JacassIndexException {
+    private ColumnKeyValue getIndexColumnKeyValue(Column column, byte[] columnValue) throws JacassIndexException {
         final String columnName = new String(column.getName());
         ColumnInfo columnInfo = getColumnInfo(columnName);
 
@@ -398,7 +397,7 @@ abstract public class BaseModel {
             columnKey.setColumnName(getKey(true));            
         }
 
-        return columnKey;
+        return new ColumnKeyValue(columnKey, columnValue);
     }
 
     /**
