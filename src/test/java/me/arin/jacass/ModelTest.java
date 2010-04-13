@@ -71,6 +71,18 @@ public class ModelTest {
     }
 
     @Test
+    public void testIndexSave() throws JacassException {
+        User user = new User("username", "emailisindexed@example.com");
+        user.save();
+
+        ColumnKey ck = new ColumnKey(user.getKeyspace(), user.getColumnFamily(), "email.__unique__index__", user.getEmail());
+        assertEquals(user.getKey(), Executor.get().getColumnCrud().getString(ck));
+
+        User user2 = (User) new User().loadRef("email", user.getEmail());
+        assertEquals(user.getKey(), user2.getKey());
+    }
+
+    @Test
     public void testKeyStuff() {
         User u = new User();
         assertNull(u.getKey());

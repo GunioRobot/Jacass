@@ -39,6 +39,10 @@ public class PrimitiveSerializer implements Serializer {
             return new byte[]{};
         }
 
+        if (value instanceof byte[]) {
+            return (byte[]) value;
+        }
+
         if ("java.lang.String".equals(cls.getName())) {
             return ((String) value).getBytes();
         }

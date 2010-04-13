@@ -28,7 +28,7 @@ abstract public class BaseModel {
     protected Map<String, ColumnInfo> columnInfos;
     protected Serializer serializer;
     protected HashMap<String, byte[]> originalIndexValues = new HashMap<String, byte[]>();
-    
+
     private Executor executor;
 
     public BaseModel() {
@@ -169,6 +169,18 @@ abstract public class BaseModel {
         return load(Arrays.asList(rowKeys));
     }
 
+    public BaseModel loadRef(final String columnName, final Object value) throws JacassException {
+        getColumnInfos();
+        byte[] bytes = getSerializer().toBytes(value);
+        Column column = new Column(columnName.getBytes(), bytes, System.currentTimeMillis());
+        ColumnKey indexColumnKey = getIndexColumnKeyValue(column, bytes).getColumnKey();
+
+        String ref = getExectutor().getColumnCrud().getString(indexColumnKey);
+        System.out.println(ref);
+
+        return null;
+    }
+
     /**
      * Multiget objects by their row keys
      *
@@ -198,7 +210,7 @@ abstract public class BaseModel {
         Map<String, BaseModel> rtn = new HashMap<String, BaseModel>();
 
         try {
-        	copyMap(rtn,execute(command));
+            copyMap(rtn, execute(command));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -265,7 +277,7 @@ abstract public class BaseModel {
             for (Field field : declaredFields) {
                 SimpleProperty mp = field.getAnnotation(SimpleProperty.class);
                 IndexedProperty idx = field.getAnnotation(IndexedProperty.class);
-                
+
                 if (mp != null || idx != null) {
                     ColumnInfo ci = new ColumnInfo(field);
                     if (idx != null) {
@@ -302,10 +314,7 @@ abstract public class BaseModel {
 
         List<Column> columns = cfMap.get(getRowPath().getColumnFamily());
         execute(command);
-
-        if (! originalIndexValues.isEmpty()) {
-            saveIndexes(columns);
-        }
+        saveIndexes(columns);
 
         return this;
     }
@@ -324,7 +333,7 @@ abstract public class BaseModel {
 
             try {
                 ColumnInfo columnInfo = columnInfos.get(columnName);
-                                
+
                 columnType = columnInfo.getCls();
                 columnValue = columnInfo.getField().get(this);
             } catch (Exception e) {
@@ -336,14 +345,12 @@ abstract public class BaseModel {
             }
 
             final byte[] ogValue = originalIndexValues.get(columnName);
+            byte[] newValueBytes = getSerializer().toBytes(columnType, columnValue);
 
-            if (ogValue != null) {
-                byte[] newValueBytes = getSerializer().toBytes(columnType, columnValue);
-
-                if (!Arrays.equals(ogValue, newValueBytes)) {
-                    ColumnKeyValue columnKeyValue = getIndexColumnKeyValue(column, newValueBytes);
-                    System.out.println(columnKeyValue);
-                }
+            if (ogValue == null || !Arrays.equals(ogValue, newValueBytes)) {
+                ColumnKeyValue columnKeyValue = getIndexColumnKeyValue(column, newValueBytes);
+                System.out.println(columnKeyValue);
+                getExectutor().getColumnCrud().set(columnKeyValue.getColumnKey(), columnKeyValue.getColumnValue());
             }
         }
     }
@@ -351,18 +358,18 @@ abstract public class BaseModel {
     /**
      * // unique
      * CF {
-     *      column_name.unique_index : { // row key
-     *          value: object_key
-     *    }
+     * column_name.unique_index : { // row key
+     * value: object_key
      * }
-     *
+     * }
+     * <p/>
      * // not unique
      * CF {
-     *      column_name.value : {       // row key
-     *          object_key : value
-     *    }
+     * column_name.value : {       // row key
+     * object_key : value
      * }
-     *
+     * }
+     * <p/>
      * TODO: this shits a mess
      *
      * @param column
@@ -373,7 +380,7 @@ abstract public class BaseModel {
         final String columnName = new String(column.getName());
         ColumnInfo columnInfo = getColumnInfo(columnName);
 
-        if (! columnInfo.isIndexed()) {
+        if (!columnInfo.isIndexed()) {
             throw new JacassIndexException(columnName + " is not an indexed column");
         }
 
@@ -382,14 +389,14 @@ abstract public class BaseModel {
 
         IndexInfo indexData = columnInfo.getIndexData();
         if (indexData.isUnique()) {
-            columnKey.setKey(columnName + "__unique__index__"); // TODO: that's ghetto
-            columnKey.setColumnName(new String(column.getValue()));
+            columnKey.setKey(columnName + ".__unique__index__"); // TODO: that's ghetto
+            columnKey.setColumnName(new String(columnValue));
+            return new ColumnKeyValue(columnKey, getKey(true).getBytes());
         } else {
             columnKey.setKey(columnName + "." + new String(column.getValue()));
-            columnKey.setColumnName(getKey(true));            
+            columnKey.setColumnName(getKey(true));
+            return new ColumnKeyValue(columnKey, columnValue);
         }
-
-        return new ColumnKeyValue(columnKey, columnValue);
     }
 
     /**
@@ -466,9 +473,9 @@ abstract public class BaseModel {
 
             try {
                 columnList.add(new Column(columnName.getBytes(),
-                        getSerializer().toBytes(columnInfos.get(columnName).getCls(),
-                                method.invoke(this)),
-                        System.currentTimeMillis()));
+                                          getSerializer().toBytes(columnInfos.get(columnName).getCls(),
+                                                                  method.invoke(this)),
+                                          System.currentTimeMillis()));
             } catch (Exception e) {
                 throw new JacassException("Could not serialize columns", e);
             }
@@ -561,66 +568,70 @@ abstract public class BaseModel {
         return getRowPath().getKeyspace();
     }
 
-	/**
-	 * Load all available objects by their row keys
-	 *
-	 * @return Map indexed by the rowkey
-	 */
-	public Map<String, BaseModel> loadAll() {
-		return load("","");
-	}
+    public String getColumnFamily() {
+        return getRowPath().getColumnFamily();
+    }
 
-	/**
-	 * Load range of available objects
-	 *
-	 * @param startKey
-	 * @param finishKey
-	 * @return Map indexed by the rowkey
-	 */
-	public Map<String, BaseModel> load(final String startKey, final String finishKey) {
-	    getRowPath();
+    /**
+     * Load all available objects by their row keys
+     *
+     * @return Map indexed by the rowkey
+     */
+    public Map<String, BaseModel> loadAll() {
+        return load("", "");
+    }
 
-	    final ColumnParent columnParent = new ColumnParent(rowPath.getColumnFamily());
-	    String superColumn = rowPath.getSuperColumn();
+    /**
+     * Load range of available objects
+     *
+     * @param startKey
+     * @param finishKey
+     * @return Map indexed by the rowkey
+     */
+    public Map<String, BaseModel> load(final String startKey, final String finishKey) {
+        getRowPath();
 
-	    if (!"".equals(superColumn)) {
-	        columnParent.setSuper_column(superColumn.getBytes());
-	    }
+        final ColumnParent columnParent = new ColumnParent(rowPath.getColumnFamily());
+        String superColumn = rowPath.getSuperColumn();
 
-	    final SlicePredicate sp = new SlicePredicate();
-	    sp.setSlice_range(new SliceRange(new byte[]{}, new byte[]{}, false, getMaxNumColumns()));
+        if (!"".equals(superColumn)) {
+            columnParent.setSuper_column(superColumn.getBytes());
+        }
 
-	    Command<Map<String, List<Column>>> command = new Command<Map<String, List<Column>>>() {
-	        @Override
-	        public Map<String, List<Column>> execute(Keyspace keyspace) throws Exception {
-	            return keyspace.getRangeSlice(columnParent, sp, startKey, finishKey, getMaxNumColumns());
-	        }
-	    };
+        final SlicePredicate sp = new SlicePredicate();
+        sp.setSlice_range(new SliceRange(new byte[]{}, new byte[]{}, false, getMaxNumColumns()));
 
-	    Map<String, BaseModel> rtn = new HashMap<String, BaseModel>();
+        Command<Map<String, List<Column>>> command = new Command<Map<String, List<Column>>>() {
+            @Override
+            public Map<String, List<Column>> execute(Keyspace keyspace) throws Exception {
+                return keyspace.getRangeSlice(columnParent, sp, startKey, finishKey, getMaxNumColumns());
+            }
+        };
 
-	    try {
-	    	copyMap(rtn, execute(command));
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	    }
+        Map<String, BaseModel> rtn = new HashMap<String, BaseModel>();
 
-	    return rtn;
-	}
+        try {
+            copyMap(rtn, execute(command));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-	private void copyMap(Map<String, BaseModel> dest, Map<String, List<Column>> source) throws InstantiationException, IllegalAccessException, JacassException
-	{
-		for (String k : source.keySet()) {
-			List<Column> columns = source.get(k);
+        return rtn;
+    }
 
-			if (columns == null || columns.isEmpty()) {
-				continue;
-			}
+    private void copyMap(Map<String, BaseModel> dest, Map<String, List<Column>> source) throws InstantiationException,
+            IllegalAccessException, JacassException {
+        for (String k : source.keySet()) {
+            List<Column> columns = source.get(k);
 
-			BaseModel bm = this.getClass().newInstance();
-			bm.setKey(k);
-			bm.injectColumns(columns);
-			dest.put(k, bm);
-		}
-	}
+            if (columns == null || columns.isEmpty()) {
+                continue;
+            }
+
+            BaseModel bm = this.getClass().newInstance();
+            bm.setKey(k);
+            bm.injectColumns(columns);
+            dest.put(k, bm);
+        }
+    }
 }
