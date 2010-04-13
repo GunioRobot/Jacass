@@ -25,9 +25,10 @@ abstract public class BaseModel {
     protected String key;
     protected static final int DEFAULT_MAX_COLUMNS = 100;
     protected RowPath rowPath;
-    protected Map<String, ColumnInfo> columnInfo;
+    protected Map<String, ColumnInfo> columnInfos;
     protected Serializer serializer;
     protected HashMap<String, byte[]> originalIndexValues = new HashMap<String, byte[]>();
+    
     private Executor executor;
 
     public BaseModel() {
@@ -164,8 +165,8 @@ abstract public class BaseModel {
      * @param rowKeys
      * @return Map indexed by the rowkey
      */
-    public Map<String, BaseModel> get(final String[] rowKeys) {
-        return get(Arrays.asList(rowKeys));
+    public Map<String, BaseModel> load(final String[] rowKeys) {
+        return load(Arrays.asList(rowKeys));
     }
 
     /**
@@ -174,7 +175,7 @@ abstract public class BaseModel {
      * @param rowKeys
      * @return Map indexed by the rowkey
      */
-    public Map<String, BaseModel> get(final List<String> rowKeys) {
+    public Map<String, BaseModel> load(final List<String> rowKeys) {
         getRowPath();
 
         final ColumnParent columnParent = new ColumnParent(rowPath.getColumnFamily());
@@ -197,17 +198,7 @@ abstract public class BaseModel {
         Map<String, BaseModel> rtn = new HashMap<String, BaseModel>();
 
         try {
-            Map<String, List<Column>> stuff = execute(command);
-            for (String k : stuff.keySet()) {
-                List<Column> columns = stuff.get(k);
-                if (columns == null || columns.isEmpty()) {
-                    continue;
-                }
-
-                BaseModel bm = this.getClass().newInstance();
-                bm.injectColumns(columns);
-                rtn.put(k, bm);
-            }
+        	copyMap(rtn,execute(command));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -265,31 +256,32 @@ abstract public class BaseModel {
      *
      * @return Info about all the members we need to persist
      */
-    protected Map<String, ColumnInfo> getColumnInfo() {
-        if (columnInfo == null) {
-            columnInfo = new HashMap<String, ColumnInfo>();
-
+    protected Map<String, ColumnInfo> getColumnInfos() {
+        if (columnInfos == null) {
+            // have a map of the fieldname to columnInfo object
+            // need a map of columnName to field
+            columnInfos = new HashMap<String, ColumnInfo>();
             Field[] declaredFields = this.getClass().getDeclaredFields();
             for (Field field : declaredFields) {
                 SimpleProperty mp = field.getAnnotation(SimpleProperty.class);
                 IndexedProperty idx = field.getAnnotation(IndexedProperty.class);
-
+                
                 if (mp != null || idx != null) {
-                    ColumnInfo ci = new ColumnInfo(field.getName(), field.getType());
+                    ColumnInfo ci = new ColumnInfo(field);
                     if (idx != null) {
                         ci.setIndexData(new IndexInfo(idx.required(), idx.unique()));
                     }
 
-                    columnInfo.put(field.getName(), ci);
+                    columnInfos.put(field.getName(), ci);
                 }
             }
         }
 
-        return columnInfo;
+        return columnInfos;
     }
 
     protected ColumnInfo getColumnInfo(String columName) {
-        return getColumnInfo().get(columName);
+        return columnInfos.get(columName);
     }
 
     /**
@@ -321,7 +313,7 @@ abstract public class BaseModel {
     private void saveIndexes(List<Column> columns) throws JacassException {
         for (Column column : columns) {
             final String columnName = new String(column.getName());
-            final IndexInfo indexInfo = columnInfo.get(columnName).getIndexData();
+            final IndexInfo indexInfo = columnInfos.get(columnName).getIndexData();
 
             if (indexInfo == null) {
                 continue;
@@ -331,10 +323,10 @@ abstract public class BaseModel {
             Object columnValue;
 
             try {
-                final Field f = this.getClass().getDeclaredField(columnName);
-                f.setAccessible(true);
-                columnType = f.getType();
-                columnValue = f.get(this);
+                ColumnInfo columnInfo = columnInfos.get(columnName);
+                                
+                columnType = columnInfo.getCls();
+                columnValue = columnInfo.getField().get(this);
             } catch (Exception e) {
                 throw new JacassIndexException("Could not manage index data for " + columnName, e);
             }
@@ -461,10 +453,10 @@ abstract public class BaseModel {
      * @throws JacassException
      */
     public Map<String, List<Column>> getCFMap() throws JacassException {
-        getColumnInfo();
+        getColumnInfos();
         List<Column> columnList = new ArrayList<Column>();
 
-        for (String columnName : columnInfo.keySet()) {
+        for (String columnName : columnInfos.keySet()) {
             String getterName = (new StringBuilder("get").append(StringUtils.capitalize(columnName))).toString();
             Method method = MethodUtils.getAccessibleMethod(this.getClass(), getterName, new Class[]{});
 
@@ -474,9 +466,9 @@ abstract public class BaseModel {
 
             try {
                 columnList.add(new Column(columnName.getBytes(),
-                                          getSerializer().toBytes(columnInfo.get(columnName).getCls(),
-                                                                  method.invoke(this)),
-                                          System.currentTimeMillis()));
+                        getSerializer().toBytes(columnInfos.get(columnName).getCls(),
+                                method.invoke(this)),
+                        System.currentTimeMillis()));
             } catch (Exception e) {
                 throw new JacassException("Could not serialize columns", e);
             }
@@ -526,12 +518,12 @@ abstract public class BaseModel {
      * @throws JacassException
      */
     protected void injectColumns(List<Column> columns) throws JacassException {
-        getColumnInfo();
+        getColumnInfos();
 
         for (Column column : columns) {
             String columnName = new String(column.getName());
             String setterName = (new StringBuilder("set").append(StringUtils.capitalize(columnName))).toString();
-            ColumnInfo ci = columnInfo.get(columnName);
+            ColumnInfo ci = columnInfos.get(columnName);
             Class columnType = ci.getCls();
 
             if (null == columnType) {
@@ -568,4 +560,67 @@ abstract public class BaseModel {
     public String getKeyspace() {
         return getRowPath().getKeyspace();
     }
+
+	/**
+	 * Load all available objects by their row keys
+	 *
+	 * @return Map indexed by the rowkey
+	 */
+	public Map<String, BaseModel> loadAll() {
+		return load("","");
+	}
+
+	/**
+	 * Load range of available objects
+	 *
+	 * @param startKey
+	 * @param finishKey
+	 * @return Map indexed by the rowkey
+	 */
+	public Map<String, BaseModel> load(final String startKey, final String finishKey) {
+	    getRowPath();
+
+	    final ColumnParent columnParent = new ColumnParent(rowPath.getColumnFamily());
+	    String superColumn = rowPath.getSuperColumn();
+
+	    if (!"".equals(superColumn)) {
+	        columnParent.setSuper_column(superColumn.getBytes());
+	    }
+
+	    final SlicePredicate sp = new SlicePredicate();
+	    sp.setSlice_range(new SliceRange(new byte[]{}, new byte[]{}, false, getMaxNumColumns()));
+
+	    Command<Map<String, List<Column>>> command = new Command<Map<String, List<Column>>>() {
+	        @Override
+	        public Map<String, List<Column>> execute(Keyspace keyspace) throws Exception {
+	            return keyspace.getRangeSlice(columnParent, sp, startKey, finishKey, getMaxNumColumns());
+	        }
+	    };
+
+	    Map<String, BaseModel> rtn = new HashMap<String, BaseModel>();
+
+	    try {
+	    	copyMap(rtn, execute(command));
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+
+	    return rtn;
+	}
+
+	private void copyMap(Map<String, BaseModel> dest, Map<String, List<Column>> source) throws InstantiationException, IllegalAccessException, JacassException
+	{
+		for (String k : source.keySet()) {
+			List<Column> columns = source.get(k);
+
+			if (columns == null || columns.isEmpty()) {
+				continue;
+			}
+
+			BaseModel bm = this.getClass().newInstance();
+			bm.setKey(k);
+			bm.injectColumns(columns);
+			dest.put(k, bm);
+		}
+	}
 }

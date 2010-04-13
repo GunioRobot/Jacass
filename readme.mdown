@@ -1,6 +1,11 @@
 This is a barely working object persistence thing for Cassandra.
 I just started so stuff's rough as hell.... but you can persist an object...
 
+You can try the BasicExample class through maven (provided you have a Cassandra
+instance running on localhost:9160) via the following:
+mvn exec:java
+
+
 # Quick example:
 
     // annotate the class

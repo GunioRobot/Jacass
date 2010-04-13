@@ -31,9 +31,21 @@ public class BasicExample {
         u3.save();
 
         // now do a multiget on the 2 distinct users and spit out their info        
-        Map<String, BaseModel> userMap = new User().get(new String[]{u3.getKey(), u.getKey()});
+        Map<String, BaseModel> userMap = new User().load(new String[]{u3.getKey(), u.getKey()});
+        System.out.println("load multiple objects:");
         for (String key : userMap.keySet()) {
             User user = (User) userMap.get(key);
+
+            System.out.println("User key: " + key);
+            System.out.println("\temail: " + user.getEmail());
+            System.out.println("\tusername: " + user.getUsername());
+        }
+
+        // See all available items in database
+        Map<String, BaseModel> userMap2 = new User().loadAll();
+        System.out.println("load all:");
+        for (String key : userMap2.keySet()) {
+            User user = (User) userMap2.get(key);
 
             System.out.println("User key: " + key);
             System.out.println("\temail: " + user.getEmail());
