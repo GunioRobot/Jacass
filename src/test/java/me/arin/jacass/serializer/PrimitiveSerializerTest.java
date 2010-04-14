@@ -87,6 +87,13 @@ public class PrimitiveSerializerTest {
     }
 
     @Test
+    public void bla() throws JacassException {
+        byte[] intBytes = p.toBytes(1);
+        byte[] strBytes = p.toBytes("1");
+        assertTrue(Arrays.equals(intBytes, strBytes));
+    }
+
+    @Test
     public void testToBytesWithoutType() throws Exception {
         assertTrue(Arrays.equals(theString.getBytes(), p.toBytes(theString)));
 

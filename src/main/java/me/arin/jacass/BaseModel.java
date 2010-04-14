@@ -400,7 +400,9 @@ abstract public class BaseModel {
             columnKey.setColumnName(new String(columnValue));
             return new ColumnKeyValue(columnKey, getKey(true).getBytes());
         } else {
-            columnKey.setKey(columnName + "." + new String(column.getValue()));
+            byte[] value = column.getValue();
+            String suffix = (value != null) ? new String(value) : null;
+            columnKey.setKey(columnName + "." + suffix);
             columnKey.setColumnName(getKey(true));
             return new ColumnKeyValue(columnKey, getKey(true).getBytes());
         }
@@ -513,10 +515,12 @@ abstract public class BaseModel {
             }
 
             try {
-                columnList.add(new Column(columnName.getBytes(),
-                                          getSerializer().toBytes(columnInfos.get(columnName).getCls(),
-                                                                  method.invoke(this)),
-                                          System.currentTimeMillis()));
+            	Object value = method.invoke(this);
+            	if (value != null)
+            		columnList.add(new Column(columnName.getBytes(),
+            				getSerializer().toBytes(columnInfos.get(columnName).getCls(),
+            						value),
+            						System.currentTimeMillis()));
             } catch (Exception e) {
                 throw new JacassException("Could not serialize columns", e);
             }

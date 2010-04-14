@@ -102,7 +102,7 @@ public class PrimitiveSerializer implements Serializer {
     }
 
     public byte[] toBytes(Object value) throws JacassException {
-        return toBytes(value.getClass(), value);
+        return (value != null) ? toBytes(value.getClass(), value) : null;
     }
 
     public Object fromBytes(byte[] bytes) throws IOException {
