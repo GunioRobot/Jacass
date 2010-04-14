@@ -443,10 +443,12 @@ abstract public class BaseModel {
             }
 
             try {
-                columnList.add(new Column(columnName.getBytes(),
-                        getSerializer().toBytes(columnInfos.get(columnName).getCls(),
-                                method.invoke(this)),
-                        System.currentTimeMillis()));
+            	Object value = method.invoke(this);
+            	if (value != null)
+            		columnList.add(new Column(columnName.getBytes(),
+            				getSerializer().toBytes(columnInfos.get(columnName).getCls(),
+            						value),
+            						System.currentTimeMillis()));
             } catch (Exception e) {
                 throw new JacassException("Could not serialize columns", e);
             }
