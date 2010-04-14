@@ -37,4 +37,9 @@ class ColumnInfo {
     public IndexInfo getIndexData() {
         return indexData;
     }
+
+    public Object getValue() {
+//        return getField().get
+        return null;
+    }
 }

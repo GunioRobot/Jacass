@@ -14,6 +14,18 @@ public class User extends BaseModel {
     @IndexedProperty(unique = true, required = false)
     String email;
 
+    @SimpleProperty
+    @IndexedProperty(unique = false, required = false)    
+    String firstName;
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
     public String getUsername() {
         return username;
     }
@@ -36,5 +48,11 @@ public class User extends BaseModel {
     }
 
     public User() {
+    }
+
+    public User(String username, String email, String firstName) {
+        this.username = username;
+        this.email = email;
+        this.firstName = firstName;
     }
 }

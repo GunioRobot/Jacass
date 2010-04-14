@@ -29,6 +29,9 @@ public class ColumnKey {
         this.columnName = columnName;
     }
 
+    public ColumnKey() {
+    }
+
     public String getKeyspace() {
         return keyspace;
     }

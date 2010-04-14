@@ -71,7 +71,7 @@ public class ModelTest {
     }
 
     @Test
-    public void testIndexSave() throws JacassException {
+    public void testUniqueIndexes() throws JacassException {
         User user = new User("username", "emailisindexed@example.com");
         user.save();
 
@@ -80,6 +80,44 @@ public class ModelTest {
 
         User user2 = (User) new User().loadRef("email", user.getEmail());
         assertEquals(user.getKey(), user2.getKey());
+
+        user = new User("username", "emailisindexed@example.com");
+        user.save();
+        user2 = (User) new User().loadRef("email", user.getEmail());
+        assertEquals(user.getKey(), user2.getKey());
+
+        // make sure the email index is cleaned up
+        ck = new ColumnKey(user.getKeyspace(), user.getColumnFamily(), "email.__unique__index__", user.getEmail());
+        user.remove();
+        assertEquals(null, Executor.get().getColumnCrud().getString(ck));
+
+        user2 = (User) new User().loadRef("email", user.getEmail());
+        assertNull(user2);
+    }
+
+    @Test
+    public void testNonUniqueIndexes() throws JacassException {
+        User bob1 = new User("bob1", "bob1@example.com", "bob");
+        User bob2 = new User("bob2", "bob2@example.com", "bob");
+
+        bob1.save();
+        bob2.save();
+
+        ColumnCrud columnCrud = Executor.get().getColumnCrud();
+
+        ColumnKey columnKey = new ColumnKey();
+        columnKey.setKeyspace(bob1.getKeyspace());
+        columnKey.setColumnFamily(bob1.getColumnFamily());
+        columnKey.setKey("firstName.bob");
+        columnKey.setColumnName(bob1.getKey());
+        assertEquals(bob1.getKey(), columnCrud.getString(columnKey));
+
+        columnKey.setColumnName(bob2.getKey());
+        assertEquals(bob2.getKey(), columnCrud.getString(columnKey));
+
+        // delete bob2 and make sure his firstName index is gone
+        bob2.remove();
+        assertNull(columnCrud.getString(columnKey));
     }
 
     @Test

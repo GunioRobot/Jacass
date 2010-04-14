@@ -32,7 +32,7 @@ abstract public class BaseModel {
     private Executor executor;
 
     public BaseModel() {
-
+        getColumnInfos();
     }
 
     protected int getMaxNumColumns() {
@@ -125,9 +125,7 @@ abstract public class BaseModel {
      * @return A new row key
      */
     public String generateKey() {
-        return this.getClass().getSimpleName().toLowerCase()
-                + "."
-                + UUIDGenerator.getInstance().generateRandomBasedUUID().toString();
+        return UUIDGenerator.getInstance().generateRandomBasedUUID().toString();
     }
 
     /**
@@ -140,14 +138,13 @@ abstract public class BaseModel {
      */
     protected <T> T execute(Command<T> command) throws JacassException {
         try {
-            Executor executor = getExectutor();
-            return executor.execute(this, command, getConsistencyLevel());
+            return getExecutor().execute(this, command, getConsistencyLevel());
         } catch (Exception e) {
             throw new JacassException(e);
         }
     }
 
-    private <T> Executor getExectutor() {
+    private <T> Executor getExecutor() {
         if (executor == null) {
             executor = Executor.get(getRowPath().getKeyspace());
         }
@@ -170,13 +167,25 @@ abstract public class BaseModel {
     }
 
     public BaseModel loadRef(final String columnName, final Object value) throws JacassException {
-        getColumnInfos();
         byte[] bytes = getSerializer().toBytes(value);
         Column column = new Column(columnName.getBytes(), bytes, System.currentTimeMillis());
         ColumnKey indexColumnKey = getIndexColumnKeyValue(column, bytes).getColumnKey();
 
-        String ref = getExectutor().getColumnCrud().getString(indexColumnKey);
-        System.out.println(ref);
+        String ref = getExecutor().getColumnCrud().getString(indexColumnKey);
+
+        if (ref == null) {
+            return null;
+        }
+
+        return this.load(ref);
+    }
+
+    public BaseModel loadRef(final String columnName, final Object[] value) throws JacassException {
+        byte[] bytes = getSerializer().toBytes(value);
+        Column column = new Column(columnName.getBytes(), bytes, System.currentTimeMillis());
+        ColumnKey indexColumnKey = getIndexColumnKeyValue(column, bytes).getColumnKey();
+
+        String ref = getExecutor().getColumnCrud().getString(indexColumnKey);
 
         return null;
     }
@@ -333,7 +342,6 @@ abstract public class BaseModel {
 
             try {
                 ColumnInfo columnInfo = columnInfos.get(columnName);
-
                 columnType = columnInfo.getCls();
                 columnValue = columnInfo.getField().get(this);
             } catch (Exception e) {
@@ -349,8 +357,7 @@ abstract public class BaseModel {
 
             if (ogValue == null || !Arrays.equals(ogValue, newValueBytes)) {
                 ColumnKeyValue columnKeyValue = getIndexColumnKeyValue(column, newValueBytes);
-                System.out.println(columnKeyValue);
-                getExectutor().getColumnCrud().set(columnKeyValue.getColumnKey(), columnKeyValue.getColumnValue());
+                getExecutor().getColumnCrud().set(columnKeyValue.getColumnKey(), columnKeyValue.getColumnValue());
             }
         }
     }
@@ -395,7 +402,17 @@ abstract public class BaseModel {
         } else {
             columnKey.setKey(columnName + "." + new String(column.getValue()));
             columnKey.setColumnName(getKey(true));
-            return new ColumnKeyValue(columnKey, columnValue);
+            return new ColumnKeyValue(columnKey, getKey(true).getBytes());
+        }
+    }
+
+    private ColumnKeyValue getIndexColumnKeyValue(String columnName, Object columnValue) throws JacassIndexException {
+        try {
+            byte[] bytesValue = getSerializer().toBytes(columnValue);
+            Column column = new Column(columnName.getBytes(), bytesValue, 0);
+            return getIndexColumnKeyValue(column, bytesValue);
+        } catch (JacassException e) {
+            throw new JacassIndexException("Could not create ColumnKeyValue for " + columnName, e);
         }
     }
 
@@ -414,7 +431,32 @@ abstract public class BaseModel {
         };
 
         execute(command);
+        removeIndexes();
         return true;
+    }
+
+    /**
+     * TODO: Do this all async?
+     *
+     * @throws JacassException
+     */
+    private void removeIndexes() throws JacassException {
+        ColumnCrud columnCrud = getExecutor().getColumnCrud();
+
+        for (String columnName : columnInfos.keySet()) {
+            ColumnInfo columnInfo = getColumnInfo(columnName);
+            if (!columnInfo.isIndexed()) {
+                continue;
+            }
+
+            try {
+                Object columnValue = columnInfo.getField().get(this);
+                ColumnKeyValue ckv = getIndexColumnKeyValue(columnName, columnValue);
+                columnCrud.remove(ckv.getColumnKey());
+            } catch (IllegalAccessException e) {
+                throw new JacassException("Could not remove indexes for " + this.getKey());
+            }
+        }
     }
 
     /**
@@ -460,7 +502,6 @@ abstract public class BaseModel {
      * @throws JacassException
      */
     public Map<String, List<Column>> getCFMap() throws JacassException {
-        getColumnInfos();
         List<Column> columnList = new ArrayList<Column>();
 
         for (String columnName : columnInfos.keySet()) {
@@ -525,8 +566,6 @@ abstract public class BaseModel {
      * @throws JacassException
      */
     protected void injectColumns(List<Column> columns) throws JacassException {
-        getColumnInfos();
-
         for (Column column : columns) {
             String columnName = new String(column.getName());
             String setterName = (new StringBuilder("set").append(StringUtils.capitalize(columnName))).toString();

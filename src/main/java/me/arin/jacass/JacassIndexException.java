@@ -13,4 +13,8 @@ public class JacassIndexException extends JacassException {
     public JacassIndexException(String s) {
         super(s);
     }
+
+    public JacassIndexException(JacassException e) {
+        super(e);
+    }
 }
