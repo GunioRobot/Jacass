@@ -18,7 +18,7 @@ import static org.junit.Assert.assertTrue;
  */
 
 class Crap {
-    
+
 }
 
 public class PrimitiveSerializerTest {

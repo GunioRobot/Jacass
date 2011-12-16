@@ -29,7 +29,7 @@ class ColumnInfo {
     public Class getCls() {
         return field.getType();
     }
-    
+
     public Field getField() {
         return field;
     }

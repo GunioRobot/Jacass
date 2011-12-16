@@ -67,7 +67,7 @@ public class ColumnCrud {
             if (rawBytes.length == 0){
                 return null;
             }
-            
+
             return serializer.fromBytes(cls, rawBytes);
         } catch (IOException e) {
             e.printStackTrace();

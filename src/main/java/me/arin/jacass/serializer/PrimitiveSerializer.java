@@ -51,7 +51,7 @@ public class PrimitiveSerializer implements Serializer {
             if (classCode == null) {
                 throw new JacassException("Unsupported type");
             }
-            
+
             switch (classCode) {
                 case INT:
                     dout.writeInt((Integer) value);

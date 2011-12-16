@@ -29,6 +29,6 @@ public class ColumnKeyTest {
         assertEquals("sc2", ck.getSuperColumn());
         assertEquals("cf2", ck.getColumnFamily());
         assertEquals("key2", ck.getKey());
-        assertEquals("col2", ck.getColumnName());        
+        assertEquals("col2", ck.getColumnName());
     }
 }

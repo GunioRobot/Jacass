@@ -22,6 +22,6 @@ public class RowPathTest{
 
         assertEquals("ks2", rp.getKeyspace());
         assertEquals("cf2", rp.getColumnFamily());
-        assertEquals("sc2", rp.getSuperColumn());        
+        assertEquals("sc2", rp.getSuperColumn());
     }
 }

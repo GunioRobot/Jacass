@@ -30,7 +30,7 @@ public class BasicExample {
         User u3 = new User("Username 2", "email2@example.com", 666);
         u3.save();
 
-        // now do a multiget on the 2 distinct users and spit out their info        
+        // now do a multiget on the 2 distinct users and spit out their info
         Map<String, BaseModel> userMap = new User().load(new String[]{u3.getKey(), u.getKey()});
         System.out.println("load multiple objects:");
         for (String key : userMap.keySet()) {

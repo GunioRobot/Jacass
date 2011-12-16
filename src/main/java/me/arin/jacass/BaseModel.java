@@ -28,7 +28,7 @@ abstract public class BaseModel {
     protected Map<String, ColumnInfo> columnInfos;
     protected Serializer serializer;
     protected HashMap<String, byte[]> originalIndexValues = new HashMap<String, byte[]>();
-    
+
     private Executor executor;
 
     public BaseModel() {
@@ -265,7 +265,7 @@ abstract public class BaseModel {
             for (Field field : declaredFields) {
                 SimpleProperty mp = field.getAnnotation(SimpleProperty.class);
                 IndexedProperty idx = field.getAnnotation(IndexedProperty.class);
-                
+
                 if (mp != null || idx != null) {
                     ColumnInfo ci = new ColumnInfo(field);
                     if (idx != null) {
@@ -307,10 +307,10 @@ abstract public class BaseModel {
 
             Class columnType;
             Object columnValue;
-            
+
             try {
                 ColumnInfo columnInfo = columnInfos.get(columnName);
-                                
+
                 columnType = columnInfo.getCls();
                 columnValue = columnInfo.getField().get(this);
             } catch (Exception e) {
@@ -334,7 +334,7 @@ abstract public class BaseModel {
                     } else {
 
                     }
-                    
+
                     System.out.println("heh");
                     // TODO: delete old index
                     // TODO: create new index

@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation denoting that a class should be persisted into Cassandra.
- * Also provides info as to where (Keyspace, CF, SC) to persist the Object 
+ * Also provides info as to where (Keyspace, CF, SC) to persist the Object
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
